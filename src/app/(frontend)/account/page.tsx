@@ -32,6 +32,9 @@ export default function Page() {
               <h2 className="text-xl font-bold">{user?.name}</h2>
               <p className="text-sm text-gray-500">{user?.email}</p>
             </div>
+            <div className="ml-auto">
+              <div className="text-sm text-gray-500">{user?.roles.join(', ')}</div>
+            </div>
           </div>
         </CardContent>
       </Card>
