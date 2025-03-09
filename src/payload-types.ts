@@ -74,6 +74,9 @@ export interface Config {
     coupons: Coupon;
     shippingStatuses: ShippingStatus;
     shippingAddresses: ShippingAddress;
+    shippingFees: ShippingFee;
+    paymentStatuses: PaymentStatus;
+    orders: Order;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -92,6 +95,9 @@ export interface Config {
     coupons: CouponsSelect<false> | CouponsSelect<true>;
     shippingStatuses: ShippingStatusesSelect<false> | ShippingStatusesSelect<true>;
     shippingAddresses: ShippingAddressesSelect<false> | ShippingAddressesSelect<true>;
+    shippingFees: ShippingFeesSelect<false> | ShippingFeesSelect<true>;
+    paymentStatuses: PaymentStatusesSelect<false> | PaymentStatusesSelect<true>;
+    orders: OrdersSelect<false> | OrdersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -351,6 +357,54 @@ export interface ShippingAddress {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shippingFees".
+ */
+export interface ShippingFee {
+  id: string;
+  name?: string | null;
+  minPrice: number;
+  maxPrice: number;
+  fee: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "paymentStatuses".
+ */
+export interface PaymentStatus {
+  id: string;
+  name: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders".
+ */
+export interface Order {
+  id: string;
+  orderer: string | User;
+  lineItems?:
+    | {
+        fragrance: string | Fragrance;
+        versionOfFragrance?: string | null;
+        quantity: number;
+        finalPrice?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  totalPrice?: number | null;
+  shippingFee?: number | null;
+  shippingStatus?: (string | null) | ShippingStatus;
+  finalAddress: string | ShippingAddress;
+  paymentStatus?: (string | null) | PaymentStatus;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -387,6 +441,18 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'shippingAddresses';
         value: string | ShippingAddress;
+      } | null)
+    | ({
+        relationTo: 'shippingFees';
+        value: string | ShippingFee;
+      } | null)
+    | ({
+        relationTo: 'paymentStatuses';
+        value: string | PaymentStatus;
+      } | null)
+    | ({
+        relationTo: 'orders';
+        value: string | Order;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -643,6 +709,51 @@ export interface ShippingAddressesSelect<T extends boolean = true> {
   contactName?: T;
   contactPhone?: T;
   user?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shippingFees_select".
+ */
+export interface ShippingFeesSelect<T extends boolean = true> {
+  name?: T;
+  minPrice?: T;
+  maxPrice?: T;
+  fee?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "paymentStatuses_select".
+ */
+export interface PaymentStatusesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "orders_select".
+ */
+export interface OrdersSelect<T extends boolean = true> {
+  orderer?: T;
+  lineItems?:
+    | T
+    | {
+        fragrance?: T;
+        versionOfFragrance?: T;
+        quantity?: T;
+        finalPrice?: T;
+        id?: T;
+      };
+  totalPrice?: T;
+  shippingFee?: T;
+  shippingStatus?: T;
+  finalAddress?: T;
+  paymentStatus?: T;
   updatedAt?: T;
   createdAt?: T;
 }

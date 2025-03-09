@@ -10,6 +10,7 @@ export const Fragrances: CollectionConfig = {
       vi: 'Nước hoa',
     },
   },
+  versions: true,
   admin: {
     useAsTitle: 'name',
   },
@@ -34,8 +35,6 @@ export const Fragrances: CollectionConfig = {
       label: {
         vi: 'Giá',
       },
-      min: 0,
-      max: 1000,
       type: 'number',
       required: true,
     },

@@ -16,7 +16,9 @@ import { Collections } from './collections/Collections'
 import { Coupons } from './collections/Coupons'
 import { ShippingStatuses } from './collections/ShippingStatus'
 import { ShippingAddresses } from './collections/ShippingAddresses'
-
+import { ShippingFees } from './collections/ShippingFees'
+import { PaymentStatuses } from './collections/PaymentStatuses'
+import { Orders } from './collections/Orders'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
@@ -42,6 +44,9 @@ export default buildConfig({
     Coupons,
     ShippingStatuses,
     ShippingAddresses,
+    ShippingFees,
+    PaymentStatuses,
+    Orders,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
