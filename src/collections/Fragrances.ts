@@ -66,6 +66,8 @@ export const Fragrances: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       hasMany: true,
+      minRows: 1,
+      required: true,
     },
     {
       name: 'quantity',

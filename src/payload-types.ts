@@ -268,7 +268,7 @@ export interface Fragrance {
   price: number;
   category: string | Category;
   discount: number;
-  images?: (string | Media)[] | null;
+  images: (string | Media)[];
   quantity: number;
   isActive: boolean;
   fragrance: string;
@@ -312,7 +312,6 @@ export interface Collection {
  */
 export interface Coupon {
   id: string;
-  code: string;
   description?: string | null;
   minimumPriceToUse: number;
   currentUse?: (string | User)[] | null;
@@ -670,7 +669,6 @@ export interface CollectionsSelect<T extends boolean = true> {
  * via the `definition` "coupons_select".
  */
 export interface CouponsSelect<T extends boolean = true> {
-  code?: T;
   description?: T;
   minimumPriceToUse?: T;
   currentUse?: T;
