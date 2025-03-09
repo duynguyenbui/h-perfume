@@ -1,6 +1,7 @@
 // storage-adapter-import-placeholder
 import { mongooseAdapter } from '@payloadcms/db-mongodb'
 import { payloadCloudPlugin } from '@payloadcms/payload-cloud'
+import { vi } from '@payloadcms/translations/languages/vi'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { buildConfig } from 'payload'
@@ -19,6 +20,12 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      graphics: {
+        Logo: './decorators/Logo/index',
+        Icon: './decorators/Icon/index',
+      },
+    },
   },
   collections: [Users, Media],
   editor: lexicalEditor(),
@@ -34,4 +41,11 @@ export default buildConfig({
     payloadCloudPlugin(),
     // storage-adapter-placeholder
   ],
+  graphQL: {
+    disable: true,
+  },
+  i18n: {
+    fallbackLanguage: 'vi',
+    supportedLanguages: { vi },
+  },
 })
