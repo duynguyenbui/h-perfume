@@ -21,7 +21,14 @@ export const Coupons: CollectionConfig = {
     update: authenticated,
   },
   admin: {
-    useAsTitle: 'code',
+    useAsTitle: 'id',
+    defaultColumns: [
+      'id',
+      'minimumPriceToUse',
+      'discountType',
+      'discountAmount',
+      'effectivePeriod',
+    ],
   },
   hooks: {
     afterChange: [
@@ -31,14 +38,6 @@ export const Coupons: CollectionConfig = {
     ],
   },
   fields: [
-    {
-      name: 'code',
-      label: {
-        vi: 'Mã giảm giá',
-      },
-      type: 'text',
-      required: true,
-    },
     {
       name: 'description',
       label: {

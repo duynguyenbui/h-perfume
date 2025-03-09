@@ -5,8 +5,8 @@ export const orderPopulateLineItemsVersionBeforeChange: CollectionBeforeChangeHo
   data,
   operation,
 }) => {
-  if (['create'].includes(operation)) {
-    const { lineItems, ...rest } = data
+  if (['create', 'update'].includes(operation)) {
+    const { lineItems } = data
 
     const lineItemsWithVersion: any[] = []
 
@@ -30,6 +30,26 @@ export const orderPopulateLineItemsVersionBeforeChange: CollectionBeforeChangeHo
       }),
     )
 
+    // populate quatity of fragrance
+    await Promise.all(
+      lineItemsWithVersion.map(async (lineItem) => {
+        const { docs } = await req.payload.find({
+          collection: 'fragrances',
+          where: {
+            id: {
+              equals: lineItem.fragrance,
+            },
+          },
+        })
+
+        if (lineItem.quantity > docs[0].quantity) {
+          lineItem.quantity = docs[0].quantity
+        }
+
+        return lineItem
+      }),
+    )
+
     // populate price of version
     await Promise.all(
       lineItemsWithVersion.map(async (lineItem) => {
@@ -46,16 +66,13 @@ export const orderPopulateLineItemsVersionBeforeChange: CollectionBeforeChangeHo
 
     // populate total price
     const totalPrice = lineItemsWithVersion.reduce((acc, lineItem) => {
-      return acc + lineItem.finalPrice
+      return acc + lineItem.finalPrice * lineItem.quantity
     }, 0)
 
     data.lineItems = lineItemsWithVersion ?? []
     data.totalPrice = totalPrice ?? 0
 
     return data
-  }
-
-  if (['update'].includes(operation)) {
   }
 
   return null
@@ -95,12 +112,4 @@ export const orderPopulateShippingFeeBeforeChange: CollectionBeforeChangeHook = 
   }
 
   return null
-}
-
-export const orderChangeQuantityBeforeChange: CollectionBeforeChangeHook = async ({
-  req,
-  data,
-  operation,
-}) => {
-  return data
 }

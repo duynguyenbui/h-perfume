@@ -1,6 +1,5 @@
 import { CollectionConfig } from 'payload'
 import {
-  orderChangeQuantityBeforeChange,
   orderPopulateLineItemsVersionBeforeChange,
   orderPopulateShippingFeeBeforeChange,
 } from './hooks/Orders'
@@ -15,11 +14,7 @@ export const Orders: CollectionConfig = {
     },
   },
   hooks: {
-    beforeChange: [
-      orderPopulateLineItemsVersionBeforeChange,
-      orderPopulateShippingFeeBeforeChange,
-      orderChangeQuantityBeforeChange,
-    ],
+    beforeChange: [orderPopulateLineItemsVersionBeforeChange, orderPopulateShippingFeeBeforeChange],
   },
   fields: [
     {

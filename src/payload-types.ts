@@ -395,6 +395,7 @@ export interface Order {
         id?: string | null;
       }[]
     | null;
+  coupon?: (string | null) | Coupon;
   totalPrice?: number | null;
   shippingFee?: number | null;
   shippingStatus?: (string | null) | ShippingStatus;
@@ -749,6 +750,7 @@ export interface OrdersSelect<T extends boolean = true> {
         finalPrice?: T;
         id?: T;
       };
+  coupon?: T;
   totalPrice?: T;
   shippingFee?: T;
   shippingStatus?: T;
