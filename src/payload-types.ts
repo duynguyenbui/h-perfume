@@ -68,14 +68,30 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
+    categories: Category;
+    fragrances: Fragrance;
+    collections: Collection;
+    coupons: Coupon;
+    shippingStatuses: ShippingStatus;
+    shippingAddresses: ShippingAddress;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
   };
-  collectionsJoins: {};
+  collectionsJoins: {
+    collections: {
+      fragrances: 'fragrances';
+    };
+  };
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
+    categories: CategoriesSelect<false> | CategoriesSelect<true>;
+    fragrances: FragrancesSelect<false> | FragrancesSelect<true>;
+    collections: CollectionsSelect<false> | CollectionsSelect<true>;
+    coupons: CouponsSelect<false> | CouponsSelect<true>;
+    shippingStatuses: ShippingStatusesSelect<false> | ShippingStatusesSelect<true>;
+    shippingAddresses: ShippingAddressesSelect<false> | ShippingAddressesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -226,6 +242,115 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories".
+ */
+export interface Category {
+  id: string;
+  title: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fragrances".
+ */
+export interface Fragrance {
+  id: string;
+  name: string;
+  description?: string | null;
+  price: number;
+  category: string | Category;
+  discount: number;
+  images?: (string | Media)[] | null;
+  quantity: number;
+  isActive: boolean;
+  fragrance: string;
+  concentration: 'edc' | 'edt' | 'edp' | 'parfum';
+  volume: number;
+  brand: string;
+  origin: string;
+  scentNotes: {
+    topNotes: string;
+    middleNotes: string;
+    baseNotes: string;
+  };
+  longevity: 'short' | 'medium' | 'long' | 'very_long';
+  collections?: (string | null) | Collection;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections".
+ */
+export interface Collection {
+  id: string;
+  name: string;
+  description: string;
+  period?: {
+    from?: string | null;
+    to?: string | null;
+  };
+  fragrances?: {
+    docs?: (string | Fragrance)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coupons".
+ */
+export interface Coupon {
+  id: string;
+  code: string;
+  description?: string | null;
+  minimumPriceToUse: number;
+  currentUse?: (string | User)[] | null;
+  quantity: number;
+  discountType: 'percentage' | 'fixed';
+  discountAmount: number;
+  collectedUsers?: (string | User)[] | null;
+  effectivePeriod: {
+    validFrom: string;
+    validTo: string;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shippingStatuses".
+ */
+export interface ShippingStatus {
+  id: string;
+  name: string;
+  description?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shippingAddresses".
+ */
+export interface ShippingAddress {
+  id: string;
+  name: string;
+  province: string;
+  district: string;
+  ward: string;
+  detailAddress: string;
+  contactName: string;
+  contactPhone: string;
+  user: string | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-locked-documents".
  */
 export interface PayloadLockedDocument {
@@ -238,6 +363,30 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'media';
         value: string | Media;
+      } | null)
+    | ({
+        relationTo: 'categories';
+        value: string | Category;
+      } | null)
+    | ({
+        relationTo: 'fragrances';
+        value: string | Fragrance;
+      } | null)
+    | ({
+        relationTo: 'collections';
+        value: string | Collection;
+      } | null)
+    | ({
+        relationTo: 'coupons';
+        value: string | Coupon;
+      } | null)
+    | ({
+        relationTo: 'shippingStatuses';
+        value: string | ShippingStatus;
+      } | null)
+    | ({
+        relationTo: 'shippingAddresses';
+        value: string | ShippingAddress;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -391,6 +540,111 @@ export interface MediaSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "categories_select".
+ */
+export interface CategoriesSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "fragrances_select".
+ */
+export interface FragrancesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  price?: T;
+  category?: T;
+  discount?: T;
+  images?: T;
+  quantity?: T;
+  isActive?: T;
+  fragrance?: T;
+  concentration?: T;
+  volume?: T;
+  brand?: T;
+  origin?: T;
+  scentNotes?:
+    | T
+    | {
+        topNotes?: T;
+        middleNotes?: T;
+        baseNotes?: T;
+      };
+  longevity?: T;
+  collections?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "collections_select".
+ */
+export interface CollectionsSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  period?:
+    | T
+    | {
+        from?: T;
+        to?: T;
+      };
+  fragrances?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "coupons_select".
+ */
+export interface CouponsSelect<T extends boolean = true> {
+  code?: T;
+  description?: T;
+  minimumPriceToUse?: T;
+  currentUse?: T;
+  quantity?: T;
+  discountType?: T;
+  discountAmount?: T;
+  collectedUsers?: T;
+  effectivePeriod?:
+    | T
+    | {
+        validFrom?: T;
+        validTo?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shippingStatuses_select".
+ */
+export interface ShippingStatusesSelect<T extends boolean = true> {
+  name?: T;
+  description?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "shippingAddresses_select".
+ */
+export interface ShippingAddressesSelect<T extends boolean = true> {
+  name?: T;
+  province?: T;
+  district?: T;
+  ward?: T;
+  detailAddress?: T;
+  contactName?: T;
+  contactPhone?: T;
+  user?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

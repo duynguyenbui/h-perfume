@@ -12,6 +12,8 @@ const navigation = [
   { name: 'Bộ Sưu Tập', href: '/collections' },
   { name: 'Nước Hoa', href: '/fragrances' },
   { name: 'Tài khoản', href: '/account', isLoggedIn: true },
+  { name: 'Đơn hàng', href: '/orders', isLoggedIn: true },
+  { name: 'Quản lý', href: '/admin', isLoggedIn: true, isAdmin: true },
 ]
 
 export default function Header() {
@@ -39,7 +41,11 @@ export default function Header() {
         </div>
         <div className="flex gap-x-12">
           {navigation
-            .filter((item) => !item.isLoggedIn || (item.isLoggedIn && user))
+            .filter((item) => {
+              if (item.isLoggedIn && !user) return false;
+              if (item.isAdmin && (!user || !user.roles?.includes('admin'))) return false;
+              return true;
+            })
             .map((item) => (
               <Link
                 key={item.name}
@@ -54,7 +60,7 @@ export default function Header() {
           {user ? (
             <>
               <Link
-                href="/profile"
+                href="/account"
                 className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors flex items-center gap-1"
               >
                 <UserIcon className="h-4 w-4" />

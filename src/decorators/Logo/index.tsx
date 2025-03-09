@@ -10,8 +10,8 @@ const Logo: React.FC = () => {
       <div className="flex items-center space-x-2 text-5xl">
         <FrameIcon className="h-10 w-10" />
         <span className="text-3xl">
-          <span className="text-primary">e</span>
-          <span className="font-bold text-4xl">Doctors</span>
+          <span className="text-primary">H</span>
+          <span className="font-bold text-4xl">-Perfume</span>
         </span>
       </div>
     </Link>

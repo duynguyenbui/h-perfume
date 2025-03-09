@@ -1,9 +1,7 @@
 'use client'
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
-import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
-import { Settings } from 'lucide-react'
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function Page() {
@@ -30,10 +28,10 @@ export default function Page() {
             </Avatar>
             <div>
               <h2 className="text-xl font-bold">{user?.name}</h2>
-              <p className="text-sm text-gray-500">{user?.email}</p>
-            </div>
-            <div className="ml-auto">
-              <div className="text-sm text-gray-500">{user?.roles.join(', ')}</div>
+              <p className="text-sm text-gray-500 font-bold">{user?.email}</p>
+              <div className="ml-auto">
+                <div className="text-sm text-gray-500 font-bold">Roles: {user?.roles.join(', ')}</div>
+              </div>
             </div>
           </div>
         </CardContent>

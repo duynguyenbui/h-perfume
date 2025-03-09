@@ -2,7 +2,12 @@ import { HoverEffect } from '@/components/CardHoverEffect'
 
 export default function Page() {
   return (
-    <div className="max-w-5xl mx-auto px-8">
+    <div className="max-w-6xl mx-auto px-8">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">
+          Nước Hoa Đẳng Cấp
+        </h1>
+      </div>
       <HoverEffect items={perfumes} />
     </div>
   )
