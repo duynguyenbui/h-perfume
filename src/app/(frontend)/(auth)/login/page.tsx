@@ -1,7 +1,15 @@
 import { LoginForm } from '@/components/Forms/Login'
+import { getServerSideUser } from '@/get-serverside-user'
 import { GalleryVerticalEnd } from 'lucide-react'
+import { redirect } from 'next/navigation'
 
-export default function Page() {
+export default async function Page() {
+  const { user } = await getServerSideUser()
+
+  if (user) {
+    redirect('/fragrances')
+  }
+
   return (
     <div className="grid min-h-svh lg:grid-cols-2">
       <div className="flex flex-col gap-4 p-6 md:p-10">

@@ -22,13 +22,7 @@ export const Coupons: CollectionConfig = {
   },
   admin: {
     useAsTitle: 'id',
-    defaultColumns: [
-      'id',
-      'minimumPriceToUse',
-      'discountType',
-      'discountAmount',
-      'effectivePeriod',
-    ],
+    defaultColumns: ['description', 'minimumPriceToUse', 'discountType', 'discountAmount'],
   },
   hooks: {
     afterChange: [
@@ -98,7 +92,7 @@ export const Coupons: CollectionConfig = {
     {
       name: 'discountAmount',
       label: {
-        vi: 'Số tiền giảm',
+        vi: 'Số tiền giảm (% hoặc số tiền cố định)',
       },
       type: 'number',
       required: true,

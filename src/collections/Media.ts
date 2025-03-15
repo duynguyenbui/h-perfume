@@ -26,14 +26,13 @@ export const Media: CollectionConfig = {
       name: 'alt',
       type: 'text',
       label: {
-        vi: 'Nội dung hình ảnh',
+        vi: 'Nội dung thay thế',
       },
-      //required: true,
     },
     {
       name: 'caption',
       label: {
-        vi: 'Nội dung hình ảnh',
+        vi: 'Tiêu đề',
       },
       type: 'richText',
       editor: lexicalEditor({

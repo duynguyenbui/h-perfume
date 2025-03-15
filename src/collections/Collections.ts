@@ -10,6 +10,11 @@ export const Collections: CollectionConfig = {
       vi: 'Bộ sưu tập',
     },
   },
+  admin: {
+    useAsTitle: 'name',
+    defaultColumns: ['name', 'description', 'period', 'createdAt', 'updatedAt'],
+    listSearchableFields: ['name', 'description'],
+  },
   fields: [
     {
       name: 'name',
@@ -43,7 +48,6 @@ export const Collections: CollectionConfig = {
           admin: {
             position: 'sidebar',
             date: {
-              displayFormat: 'DD/MM/YYYY',
               pickerAppearance: 'dayAndTime',
             },
           },
@@ -57,7 +61,6 @@ export const Collections: CollectionConfig = {
           admin: {
             position: 'sidebar',
             date: {
-              displayFormat: 'DD/MM/YYYY',
               pickerAppearance: 'dayAndTime',
             },
           },

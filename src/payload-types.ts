@@ -281,7 +281,7 @@ export interface Fragrance {
     middleNotes: string;
     baseNotes: string;
   };
-  longevity: 'short' | 'medium' | 'long' | 'very_long';
+  longevity: 'short' | 'medium' | 'long' | 'veryLong';
   collections?: (string | null) | Collection;
   updatedAt: string;
   createdAt: string;
@@ -385,21 +385,22 @@ export interface PaymentStatus {
 export interface Order {
   id: string;
   orderer: string | User;
-  lineItems?:
-    | {
-        fragrance: string | Fragrance;
-        versionOfFragrance?: string | null;
-        quantity: number;
-        finalPrice?: number | null;
-        id?: string | null;
-      }[]
-    | null;
+  lineItems: {
+    fragrance: string | Fragrance;
+    versionOfFragrance: string;
+    quantity: number;
+    discount: number;
+    price: number;
+    id?: string | null;
+  }[];
   coupon?: (string | null) | Coupon;
-  totalPrice?: number | null;
-  shippingFee?: number | null;
-  shippingStatus?: (string | null) | ShippingStatus;
+  totalPrice: number;
+  finalPrice: number;
+  shippingFee: number;
+  shippingStatus: string | ShippingStatus;
   finalAddress: string | ShippingAddress;
-  paymentStatus?: (string | null) | PaymentStatus;
+  paymentStatus: string | PaymentStatus;
+  paymentMethod: 'stripe' | 'cod';
   updatedAt: string;
   createdAt: string;
 }
@@ -745,15 +746,18 @@ export interface OrdersSelect<T extends boolean = true> {
         fragrance?: T;
         versionOfFragrance?: T;
         quantity?: T;
-        finalPrice?: T;
+        discount?: T;
+        price?: T;
         id?: T;
       };
   coupon?: T;
   totalPrice?: T;
+  finalPrice?: T;
   shippingFee?: T;
   shippingStatus?: T;
   finalAddress?: T;
   paymentStatus?: T;
+  paymentMethod?: T;
   updatedAt?: T;
   createdAt?: T;
 }

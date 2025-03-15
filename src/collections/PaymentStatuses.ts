@@ -10,6 +10,9 @@ export const PaymentStatuses: CollectionConfig = {
       vi: 'Trạng thái thanh toán',
     },
   },
+  admin: {
+    useAsTitle: 'name',
+  },
   fields: [
     {
       name: 'name',

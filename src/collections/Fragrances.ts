@@ -214,7 +214,7 @@ export const Fragrances: CollectionConfig = {
         },
         {
           label: 'Rất dài (>8 giờ)',
-          value: 'very_long',
+          value: 'veryLong',
         },
       ],
     },

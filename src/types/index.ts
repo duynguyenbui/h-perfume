@@ -1,4 +1,11 @@
-import {  User } from '@/payload-types'
+import {
+  Coupon,
+  Fragrance,
+  PaymentStatus,
+  ShippingAddress,
+  ShippingStatus,
+  User,
+} from '@/payload-types'
 import type { Permissions } from 'payload'
 
 export type ResetPassword = (args: {
@@ -36,4 +43,25 @@ export enum ModalType {
   SIZE_SELECTOR = 1,
   ADD_ADDRESS = 2,
   ADD_TO_CART = 3,
+}
+
+export interface OrderToCreate {
+  orderer: User
+  lineItems: LineItem[]
+  coupon?: (string | null) | Coupon
+  totalPrice: number
+  finalPrice: number
+  shippingFee: number
+  shippingStatus: ShippingStatus
+  finalAddress: ShippingAddress
+  paymentStatus: PaymentStatus
+  paymentMethod: 'stripe' | 'cod'
+}
+
+export interface LineItem {
+  fragrance: string | Fragrance
+  versionOfFragrance: string
+  quantity: number
+  discount: number
+  price: number
 }

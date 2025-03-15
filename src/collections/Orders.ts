@@ -1,8 +1,5 @@
 import { CollectionConfig } from 'payload'
-import {
-  orderPopulateLineItemsVersionBeforeChange,
-  orderPopulateShippingFeeBeforeChange,
-} from './hooks/Orders'
+
 export const Orders: CollectionConfig = {
   slug: 'orders',
   labels: {
@@ -14,7 +11,7 @@ export const Orders: CollectionConfig = {
     },
   },
   hooks: {
-    beforeChange: [orderPopulateLineItemsVersionBeforeChange, orderPopulateShippingFeeBeforeChange],
+    beforeChange: [],
   },
   fields: [
     {
@@ -27,6 +24,7 @@ export const Orders: CollectionConfig = {
       hasMany: false,
       admin: {
         position: 'sidebar',
+        readOnly: true,
       },
       required: true,
     },
@@ -35,6 +33,7 @@ export const Orders: CollectionConfig = {
       label: {
         vi: 'Sản phẩm(s)',
       },
+      required: true,
       type: 'array',
       fields: [
         {
@@ -44,9 +43,6 @@ export const Orders: CollectionConfig = {
           },
           type: 'relationship',
           relationTo: 'fragrances',
-          admin: {
-            position: 'sidebar',
-          },
           required: true,
         },
         {
@@ -58,6 +54,7 @@ export const Orders: CollectionConfig = {
             readOnly: true,
           },
           type: 'text',
+          required: true,
         },
         {
           name: 'quantity',
@@ -68,13 +65,19 @@ export const Orders: CollectionConfig = {
           required: true,
         },
         {
-          name: 'finalPrice',
+          name: 'discount',
+          label: {
+            vi: 'Giảm giá',
+          },
+          type: 'number',
+          required: true,
+        },
+        {
+          name: 'price',
           label: {
             vi: 'Giá',
           },
-          admin: {
-            readOnly: true,
-          },
+          required: true,
           type: 'number',
         },
       ],
@@ -94,12 +97,24 @@ export const Orders: CollectionConfig = {
       name: 'totalPrice',
       admin: {
         position: 'sidebar',
-        readOnly: true,
       },
       label: {
-        vi: 'Tổng giá',
+        vi: 'Tổng giá theo sản phẩm',
       },
       type: 'number',
+      required: true,
+      defaultValue: 0,
+    },
+    {
+      name: 'finalPrice',
+      admin: {
+        position: 'sidebar',
+      },
+      label: {
+        vi: 'Tổng giá cuối cùng',
+      },
+      type: 'number',
+      required: true,
       defaultValue: 0,
     },
     {
@@ -112,6 +127,7 @@ export const Orders: CollectionConfig = {
         position: 'sidebar',
       },
       defaultValue: 0,
+      required: true,
     },
     {
       name: 'shippingStatus',
@@ -124,6 +140,7 @@ export const Orders: CollectionConfig = {
       admin: {
         position: 'sidebar',
       },
+      required: true,
     },
     {
       name: 'finalAddress',
@@ -146,6 +163,30 @@ export const Orders: CollectionConfig = {
       admin: {
         position: 'sidebar',
       },
+      required: true,
+    },
+    {
+      name: 'paymentMethod',
+      label: {
+        vi: 'Phương thức thanh toán',
+      },
+      type: 'select',
+      required: true,
+      options: [
+        {
+          label: {
+            vi: 'Thanh toán trực tuyến (Stripe)',
+          },
+          value: 'stripe',
+        },
+        {
+          label: {
+            vi: 'COD',
+          },
+          value: 'cod',
+        },
+      ],
+      defaultValue: 'stripe',
     },
   ],
 }

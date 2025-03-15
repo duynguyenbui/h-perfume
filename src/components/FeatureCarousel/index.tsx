@@ -78,7 +78,7 @@ export default function FeatureCarousel() {
                 </div>
                 <div className="mt-4">
                   <a
-                    href="/fragrances"
+                    href="/collections"
                     className="text-primary hover:underline"
                   >
                     Khám phá bộ sưu tập →

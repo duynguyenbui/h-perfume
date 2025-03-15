@@ -7,7 +7,7 @@ const adminsOrDoctors: Access = ({ req: { user } }) => {
       return true
     }
 
-    if (checkRole(['doctor'], user)) {
+    if (checkRole(['user'], user)) {
       return true
     }
   }
