@@ -14,11 +14,7 @@ export default async function Page({
   const limitNumber = Number(limit)
   const collectionName = String(collection)
 
-  const {
-    data: fragrances,
-    success,
-    message,
-  } = await getFragrances({
+  const { data: fragrances } = await getFragrances({
     page: pageNumber,
     limit: limitNumber,
     collection: collectionName,

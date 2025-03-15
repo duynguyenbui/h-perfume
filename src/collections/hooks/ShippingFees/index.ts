@@ -3,7 +3,6 @@ import { CollectionBeforeChangeHook, CollectionBeforeValidateHook } from 'payloa
 export const shippingFeeValidateBeforeChange: CollectionBeforeValidateHook = async ({
   req,
   data,
-  originalDoc,
   operation,
 }) => {
   if (['create', 'update'].includes(operation)) {
@@ -80,9 +79,7 @@ export const shippingFeeValidateBeforeChange: CollectionBeforeValidateHook = asy
 }
 
 export const shippingFeePopulateNameBeforeChange: CollectionBeforeChangeHook = async ({
-  req,
   data,
-  originalDoc,
   operation,
 }) => {
   if (['create', 'update'].includes(operation)) {

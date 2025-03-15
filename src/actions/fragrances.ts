@@ -13,7 +13,7 @@ export const getFragrances = async ({
 }) => {
   const payload = await getPayloadClient()
 
-  let whereClause: any = {
+  const whereClause: any = {
     and: [
       {
         isActive: {

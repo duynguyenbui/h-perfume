@@ -1,13 +1,11 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-
-import type { Payload, PayloadRequest, File } from 'payload'
+import type { Payload, File } from 'payload'
 import { faker } from '@faker-js/faker'
 import path from 'path'
 import fs from 'fs/promises'
 
 const capitalize = (str: string) => str.charAt(0).toUpperCase() + str.slice(1)
 
-export const seed = async ({ payload, req }: { payload: Payload; req: PayloadRequest }) => {
+export const seed = async ({ payload }: { payload: Payload }) => {
   payload.logger.info(`Deleting all data...`)
 
   await Promise.all([

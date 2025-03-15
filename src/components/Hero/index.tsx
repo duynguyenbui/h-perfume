@@ -1,7 +1,7 @@
 'use client'
 
 import { motion } from 'framer-motion'
-
+import Link from 'next/link'
 export default function Hero() {
   return (
     <div className="relative isolate overflow-hidden bg-background">
@@ -31,12 +31,12 @@ export default function Hero() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.4 }}
           >
-            <a href="/collections" className="apple-button">
+            <Link href="/collections" className="apple-button">
               Mua Sắm Bộ Sưu Tập
-            </a>
-            <a href="/fragrances" className="text-sm font-semibold leading-6 text-foreground">
+            </Link>
+            <Link href="/fragrances" className="text-sm font-semibold leading-6 text-foreground">
               Khám Phá Hương Thơm <span aria-hidden="true">→</span>
-            </a>
+            </Link>
           </motion.div>
         </div>
         <motion.div

@@ -39,7 +39,7 @@ const ImageSlider: React.FC<ImageSliderProps> = ({
     }, autoSlideInterval)
 
     return () => clearInterval(intervalId)
-  }, [autoSlide, autoSlideInterval, images.length])
+  }, [autoSlide, autoSlideInterval, images.length, nextSlide])
 
   const getImageUrl = (image: string | Media): string => {
     const imageUrl = typeof image === 'object' ? image.url : image

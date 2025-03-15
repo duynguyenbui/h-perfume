@@ -64,7 +64,7 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
       }
     }
 
-    const { docs: paymentStatus, totalDocs: totalPaymentStatus } = await payload.find({
+    const { docs: paymentStatus } = await payload.find({
       collection: 'paymentStatuses',
       where: {
         name: {
@@ -84,7 +84,7 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
       }
     }
 
-    let lineItemsToBeCreated: LineItem[] = []
+    const lineItemsToBeCreated: LineItem[] = []
 
     for (const lineItem of lineItems) {
       const fragrance = await payload.findByID({
@@ -129,7 +129,7 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
       0,
     )
 
-    let finalPrice = totalPrice + (shippingFee.fee || 0)
+    const finalPrice = totalPrice + (shippingFee.fee || 0)
 
     let coupon = null
 
@@ -174,12 +174,13 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
     )
 
     // Commit the transaction
-    transactionID && (await payload.db.commitTransaction(transactionID))
+    await payload.db.commitTransaction(transactionID!)
 
     return { success: true, message: 'Tạo đơn hàng thành công', data: order }
   } catch (error) {
+    console.error(error)
     // Rollback the transaction
-    transactionID && (await payload.db.rollbackTransaction(transactionID))
+    await payload.db.rollbackTransaction(transactionID!)
     return { success: false, message: 'Lỗi khi tạo đơn hàng', data: undefined }
   }
 }

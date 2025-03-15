@@ -17,7 +17,6 @@ export const CollectionCard: React.FC<CollectionCardProps> = ({ Icon, id, title,
   const router = useRouter()
 
   const handleClick = () => {
-    const collection = encodeURIComponent(id)
     router.push(`/fragrances?collection=${id}`)
     toast.success(`Đã chuyển đến bộ sưu tập ${title}`)
   }
