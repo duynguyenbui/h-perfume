@@ -315,7 +315,8 @@ export const seed = async ({ payload }: { payload: Payload }) => {
 
   for (let i = 1; i <= 10; i++) {
     const imageBuffer = await readFilePayload(
-      'D:/Projects/PayloadCMS/h-perfume/pics', // Change it depends on your local path
+      // 'D:/Projects/PayloadCMS/h-perfume/pics', // Change it depends on your local path
+      'E:/project/h-perfume/pics', // Change it depends on your local path
       `${i}.jpg`,
     )
 

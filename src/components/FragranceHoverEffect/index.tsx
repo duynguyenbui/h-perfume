@@ -64,7 +64,7 @@ export const FragranceHoverEffect = ({
                 <span className="font-bold text-lg">{item.brand}</span>
                 <div className="flex items-center gap-2 text-sm">
                   <span className="text-zinc-400">{item.origin}</span>
-                  <span className="text-zinc-400">•</span>
+                  <span className="text-zinc-400">• </span>
                   <span className="text-zinc-400 capitalize">{item.longevity}</span>
                 </div>
               </div>
@@ -91,7 +91,7 @@ export const FragranceHoverEffect = ({
                 href={`/fragrances/${item?.id}`}
                 className="flex items-center gap-2 text-zinc-400 hover:text-zinc-100 text-sm transition-colors"
               >
-                Shop now
+                chi tiết
                 <ShoppingBag className="h-4 w-4" />
               </Link>
             </CardFooter>

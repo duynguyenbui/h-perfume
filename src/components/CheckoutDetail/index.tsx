@@ -36,6 +36,8 @@ import { useForm } from 'react-hook-form'
 import { createOrder } from '@/actions/orders'
 import { useRouter } from 'next/navigation'
 
+import { getValidCoupons } from '@/actions/coupons'
+
 export default function CheckoutDetail() {
   const { user } = useAuth()
   const { lineItems, clearCart } = useCart()
@@ -44,6 +46,14 @@ export default function CheckoutDetail() {
   const [shippingAddresses, setShippingAddresses] = useState<ShippingAddress[]>([])
   const [shippingFee, setShippingFee] = useState<ShippingFee | null>(null)
   const [totalPrice, setTotalPrice] = useState<number>(0)
+  const [discountAmount, setDiscountAmount] = useState<number>(0)
+
+  const [coupons, setCoupons] = useState<{ id: string; code: string; discountAmount: number }[]>([])
+  const [selectedCouponDetails, setSelectedCouponDetails] = useState<any>(null)
+  const [selectedCoupon, setSelectedCoupon] = useState<string | null>(null)
+
+  const totalBeforeCoupon = totalPrice + (shippingFee?.fee || 0)
+  const totalAfterCoupon = Math.max(totalBeforeCoupon - discountAmount, 0)
 
   const form = useForm<TPayloadCheckoutValidator>({
     resolver: zodResolver(PayloadCheckoutValidator),
@@ -59,7 +69,7 @@ export default function CheckoutDetail() {
       currency: 'VND',
     }).format(price)
   }
-
+  // fecth list shipping address
   useEffect(() => {
     if (user) {
       getShippingAddresses().then((res) => {
@@ -71,7 +81,7 @@ export default function CheckoutDetail() {
       })
     }
   }, [user])
-
+  // Calculate the total price of the order
   useEffect(() => {
     if (lineItems.length) {
       const subtotal = lineItems.reduce((acc, item) => {
@@ -92,13 +102,37 @@ export default function CheckoutDetail() {
       })
     }
   }, [lineItems, form])
-
+  // Sync the list of cart items
   useEffect(() => {
     form.setValue(
       'lineItems',
       lineItems.map((item) => ({ id: item.id, quantity: item.quantity })),
     )
   }, [lineItems, form])
+  // Fetch the list of valid coupons
+  useEffect(() => {
+    if (user && totalPrice > 0) {
+      console.log('giá tiền:', totalPrice)
+
+      getValidCoupons({ minimumPrice: totalPrice }).then((res) => {
+        if (res.success) {
+          console.log(res)
+          setCoupons(res.data || [])
+        } else {
+          toast.error(res.message)
+        }
+      })
+    }
+  }, [user, totalPrice])
+
+  // calculateDiscountAmount type percentage and fixed
+  const calculateDiscount = (coupon: any, total: number) => {
+    if (coupon.discountType === 'percentage') {
+      return (total * coupon.discountAmount) / 100
+    } else if (coupon.discountType === 'fixed') {
+      return coupon.discountAmount
+    }
+  }
 
   const onSubmit = (data: TPayloadCheckoutValidator) => {
     const { success } = PayloadCheckoutValidator.safeParse(data)
@@ -210,6 +244,7 @@ export default function CheckoutDetail() {
                     />
                   </CardContent>
                 </Card>
+
                 <Card className="shadow-md w-full md:w-1/2">
                   <CardHeader className="border-b pb-2">
                     <CardTitle className="flex items-center gap-2">
@@ -217,27 +252,74 @@ export default function CheckoutDetail() {
                       Mã Khuyến Mãi
                     </CardTitle>
                   </CardHeader>
+                  {/* Coupons */}
                   <CardContent className="p-6 space-y-4">
                     <FormField
                       control={form.control}
                       name="couponId"
                       render={({ field }) => (
                         <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value)
+                              setSelectedCoupon(value)
+                              const coupon = coupons.find((c) => c.id === value)
+
+                              setSelectedCouponDetails(coupon || null)
+                              const discount = coupon ? calculateDiscount(coupon, totalPrice) : 0
+                              setDiscountAmount(discount)
+                            }}
+                            value={selectedCoupon || field.value}
+                          >
                             <FormControl>
                               <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Chọn mã khuyến mãi" />
                               </SelectTrigger>
                             </FormControl>
                             <SelectContent className="max-h-[300px] w-full overflow-y-auto">
-                              <SelectItem value="1">GIAMGIA10</SelectItem>
-                              <SelectItem value="2">FREESHIP</SelectItem>
+                              {coupons.length > 0 ? (
+                                coupons.map((coupon) => (
+                                  <SelectItem key={coupon.id} value={coupon.id}>
+                                    {coupon.code}
+                                  </SelectItem>
+                                ))
+                              ) : (
+                                <div className="p-2 text-center text-gray-500">
+                                  Không có mã giảm giá hợp lệ
+                                </div>
+                              )}
                             </SelectContent>
                           </Select>
                           <FormMessage />
                         </FormItem>
                       )}
                     />
+
+                    {selectedCoupon && selectedCouponDetails && (
+                      <div className="p-4 bg-gray-100 rounded-md">
+                        <p className="text-sm text-gray-700">
+                          📢 <strong>{selectedCouponDetails?.description}</strong>
+                        </p>
+                        <p className="text-sm">
+                          Giảm giá:{' '}
+                          <strong>
+                            {selectedCouponDetails.discountType === 'percentage'
+                              ? `${selectedCouponDetails.discountAmount}%`
+                              : formatPrice(selectedCouponDetails.discountAmount)}
+                          </strong>
+                        </p>
+                        <p className="text-sm">
+                          Đơn tối thiểu:{' '}
+                          <strong>
+                            {selectedCouponDetails?.minimumPriceToUse.toLocaleString()} VND
+                          </strong>
+                        </p>
+
+                        <p className="text-sm">
+                          Số lượng còn: <strong>{selectedCouponDetails?.quantity}</strong>
+                        </p>
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>
@@ -292,7 +374,7 @@ export default function CheckoutDetail() {
             {/* Right Column - Order Summary */}
             <div className="lg:w-1/3 space-y-6">
               <Card className="shadow-md sticky top-4">
-                <CardHeader className=" border-b pb-2">
+                <CardHeader className="border-b pb-2">
                   <CardTitle className="text-xl">Tổng Đơn Hàng</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
@@ -306,13 +388,22 @@ export default function CheckoutDetail() {
                       <span>Đã bao gồm trong tạm tính</span>
                     </div>
                     <div className="flex justify-between">
+                      <span className="text-muted-foreground">Giảm giá (Coupon)</span>
+                      <span>
+                        -{formatPrice(discountAmount)}
+                        {selectedCouponDetails?.discountType === 'percentage' && (
+                          <span className="ml-1">({selectedCouponDetails.discountAmount}%)</span>
+                        )}
+                      </span>
+                    </div>
+                    <div className="flex justify-between">
                       <span className="text-muted-foreground">Phí vận chuyển</span>
                       <span>{formatPrice(shippingFee?.fee || 0)}</span>
                     </div>
                     <Separator />
                     <div className="flex justify-between font-bold text-lg">
                       <span>Tổng cộng</span>
-                      <span>{formatPrice(totalPrice + (shippingFee?.fee || 0))}</span>
+                      <span>{formatPrice(totalAfterCoupon)}</span>
                     </div>
                   </div>
                 </CardContent>

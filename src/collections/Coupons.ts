@@ -33,6 +33,12 @@ export const Coupons: CollectionConfig = {
   },
   fields: [
     {
+      name: 'code',
+      required: true,
+      type: 'text',
+      label: 'Mã khuyến mãi',
+    },
+    {
       name: 'description',
       label: {
         vi: 'Mô tả',
@@ -148,6 +154,11 @@ export const Coupons: CollectionConfig = {
           },
         },
       ],
+    },
+    {
+      name: 'maxUsagePerUser',
+      type: 'number',
+      label: 'Số lần tối đa người dùng sử dụng',
     },
   ],
 }
