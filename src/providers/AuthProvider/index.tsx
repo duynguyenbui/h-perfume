@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ api?: 'gql' | 'rest'; children: React.Reac
         return loginUser?.user
       }
     },
-    [api],
+    [api, setUser],
   )
 
   const logout = useCallback<Logout>(async () => {
