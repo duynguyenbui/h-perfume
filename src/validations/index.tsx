@@ -17,25 +17,32 @@ export const PayloadUserSignUpValidator = z.object({
   }),
 })
 
+// export const PayloadCheckoutValidator = z.object({
+//   lineItems: z.array(
+//     z.object({
+//       id: z.string(),
+//       quantity: z.number(),
+//     }),
+//   ),
+//   shippingAddressId: z.string({
+//     message: 'Vui lòng chọn địa chỉ giao hàng',
+//   }),
+//   shippingFeeId: z.string({
+//     message: 'Phí vận chuyển không hợp lệ',
+//   }),
+//   couponId: z.string().optional(),
+//   paymentMethod: z.string({
+//     message: 'Vui lòng chọn phương thức thanh toán',
+//   }),
+//   orderId: z.string(),
+// })
 export const PayloadCheckoutValidator = z.object({
-  lineItems: z.array(
-    z.object({
-      id: z.string(),
-      quantity: z.number(),
-    }),
-  ),
-  shippingAddressId: z.string({
-    message: 'Vui lòng chọn địa chỉ giao hàng',
-  }),
-  shippingFeeId: z.string({
-    message: 'Phí vận chuyển không hợp lệ',
-  }),
+  lineItems: z.array(z.object({ id: z.string(), quantity: z.number() })),
+  paymentMethod: z.enum(['cod', 'momo']),
+  shippingAddressId: z.string(),
+  shippingFeeId: z.string(),
   couponId: z.string().optional(),
-  paymentMethod: z.string({
-    message: 'Vui lòng chọn phương thức thanh toán',
-  }),
 })
-
 export type TPayloadCheckoutValidator = z.infer<typeof PayloadCheckoutValidator>
 export type TPayloadUserLoginValidator = z.infer<typeof PayloadUserLoginValidator>
 export type TPayloadUserSignUpValidator = z.infer<typeof PayloadUserSignUpValidator>
