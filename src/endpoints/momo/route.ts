@@ -6,6 +6,7 @@ import { Order } from '@/payload-types'
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    console.log('Bước 1: Đang phân tích body của request...')
     // Phân tích dữ liệu từ request body
     const body: CreateMomoPaymentRequest = await request.json()
     const {
@@ -19,7 +20,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       couponId,
       paymentMethod,
     } = body
-
+    console.log('Bước 2: Kiểm tra paymentMethod...')
     // Kiểm tra paymentMethod
     if (paymentMethod !== 'momo') {
       return NextResponse.json(
@@ -29,11 +30,12 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     // Tìm `paymentStatus` có giá trị "pending"
+    console.log('Bước 3: Tìm paymentStatus với value: "pending"...')
     const paymentStatuses = await payload.find({
       collection: 'paymentStatuses',
       where: { value: { equals: 'pending' } },
     })
-
+    console.log('Kết quả tìm paymentStatuses:', paymentStatuses)
     if (!paymentStatuses.docs || paymentStatuses.docs.length === 0) {
       return NextResponse.json(
         { success: false, message: "Không tìm thấy trạng thái thanh toán 'pending'" },
@@ -42,7 +44,7 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const pendingPaymentStatusId = paymentStatuses.docs[0].id
-
+    console.log('Bước 4: Tìm shippingStatus với value: "pending"...')
     // Tìm `shippingStatus` có giá trị "pending"
     const shippingStatuses = await payload.find({
       collection: 'shippingStatuses',
@@ -57,10 +59,10 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const pendingShippingStatusId = shippingStatuses.docs[0].id
-
+    console.log('Bước 5: Tính phí vận chuyển...')
     // Tính phí vận chuyển (nếu có logic để lấy từ shippingFeeId)
     const shippingFee = 0 // Cần thay bằng logic thực tế nếu có (ví dụ: lấy từ collection `shippingFees`)
-
+    console.log('Bước 6: Tạo đơn hàng trong Payload CMS...')
     // Tạo đơn hàng trong Payload CMS
     const order = (await payload.create({
       collection: 'orders' as const,
@@ -95,7 +97,7 @@ export async function POST(request: Request): Promise<NextResponse> {
         { status: 400 },
       )
     }
-
+    console.log('Bước 7: Cấu hình Momo...')
     // Cấu hình Momo
     const accessKey: string = process.env.MOMO_ACCESS_KEY || 'F8BBA842ECF85'
     const secretKey: string = process.env.MOMO_SECRET_KEY || 'K951B6PE1waDMi640xX08PD3vg6EkVlz'
@@ -109,14 +111,14 @@ export async function POST(request: Request): Promise<NextResponse> {
     const orderGroupId: string = ''
     const autoCapture: boolean = true
     const lang: string = 'vi'
-
+    console.log('Bước 8: Tạo chữ ký cho Momo...')
     // Tạo chữ ký (signature)
     const rawSignature: string = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`
     const signature: string = crypto
       .createHmac('sha256', secretKey)
       .update(rawSignature)
       .digest('hex')
-
+    console.log('signature:', signature)
     // Dữ liệu yêu cầu gửi đến Momo API
     const requestBody: MomoPaymentRequest = {
       partnerCode,

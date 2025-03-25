@@ -172,16 +172,16 @@ export default function CheckoutDetail() {
           couponId: data.couponId,
           paymentMethod: data.paymentMethod,
         }
-        console.log('Request body gửi đến src/api/momo:', requestBody)
+        console.log('Request body gửi đến endpoints/momo', requestBody)
 
-        const response = await fetch('/api/momo', {
+        const response = await fetch('endpoints/momo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
         })
 
         const result = await response.json()
-        console.log('Kết quả từ /api/momo:', result)
+        console.log('Kết quả từ endpoints/momo:', result)
 
         if (result.success && result.payUrl) {
           console.log('Chuyển hướng đến trang thanh toán Momo:', result.payUrl)
