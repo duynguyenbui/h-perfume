@@ -1,22 +1,20 @@
 {
-  "version": "0.2.0",
   "configurations": [
     {
-      "name": "Next.js Debug",
+      "name": "Next.js: debug full stack",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/node_modules/.bin/next",
-      "args": ["dev"],
+      "program": "${workspaceFolder}/node_modules/next/dist/bin/next",
       "runtimeArgs": ["--inspect"],
-      "outputCapture": "std",
       "skipFiles": ["<node_internals>/**"],
       "serverReadyAction": {
         "action": "debugWithChrome",
-        "pattern": "Local:\\s*(https?://\\S+)",
-        "uriFormat": "%s"
+        "killOnServerStop": true,
+        "pattern": "-_Local:.(https?:/.+)",
+        "uriFormat": "%s",
+        "webRoot": "${workspaceFolder}"
       },
-      "cwd": "${workspaceFolder}",
-      "console": "integratedTerminal"
+      "cwd": "${workspaceFolder}"
     }
   ]
 }
