@@ -172,7 +172,7 @@ export default function CheckoutDetail() {
           couponId: data.couponId,
           paymentMethod: data.paymentMethod,
         }
-        console.log('Request body gửi đến /api/momo:', requestBody)
+        console.log('Request body gửi đến src/api/momo:', requestBody)
 
         const response = await fetch('/api/momo', {
           method: 'POST',
