@@ -47,6 +47,9 @@ export const Users: CollectionConfig = {
     },
     {
       name: 'roles',
+      label: {
+        vi: 'Vai trò',
+      },
       type: 'select',
       hasMany: true,
       saveToJWT: true,
@@ -56,11 +59,15 @@ export const Users: CollectionConfig = {
       },
       options: [
         {
-          label: 'Admin',
+          label: {
+            vi: 'Quản trị viên',
+          },
           value: 'admin',
         },
         {
-          label: 'User',
+          label: {
+            vi: 'Người dùng',
+          },
           value: 'user',
         },
       ],

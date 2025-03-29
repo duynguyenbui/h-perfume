@@ -1,7 +1,7 @@
 'use client'
 
 // @ts-nocheck
-import { LogOutIcon } from '@/components/CustomIcon/LogoutIcon'
+import { Frame } from 'lucide-react'
 /**
  * v0 by Vercel.
  * @see https://v0.dev/t/EXdet7CS2Qj
@@ -35,12 +35,12 @@ export default function Page() {
   return (
     <div className="flex min-h-[100dvh] flex-col items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-md text-center">
-        <LogOutIcon className="mx-auto h-12 w-12 text-primary" />
+        <Frame className="mx-auto h-12 w-12 text-primary" />
         <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl">
           Đang đăng xuất
         </h1>
         <p className="mt-4 text-muted-foreground">
-          Bạn sắp đăng xuất khỏi tài khoản của mình. Bạn có chắc chắn muốn tiếp tục không?
+          Bạn đang đăng xuất khỏi tài khoản của mình.
         </p>
         <div className="mt-6 flex gap-2 justify-center">
           <Button

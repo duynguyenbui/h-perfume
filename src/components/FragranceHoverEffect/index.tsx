@@ -16,6 +16,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Badge } from '../ui/badge'
+import ImageSlider from '../ImageSlider'
 
 export const FragranceHoverEffect = ({
   items,
@@ -59,6 +60,9 @@ export const FragranceHoverEffect = ({
                 <Badge variant="destructive">{item.concentration}</Badge>
               </CardTitle>
             </CardHeader>
+            <div className="px-6 w-full h-72 rounded-md overflow-hidden mb-4">
+              <ImageSlider images={item.images} />
+            </div>
             <CardContent>
               <div className="flex flex-col gap-1 mb-1">
                 <span className="font-bold text-lg">{item.brand}</span>
@@ -91,7 +95,7 @@ export const FragranceHoverEffect = ({
                 href={`/fragrances/${item?.id}`}
                 className="flex items-center gap-2 text-zinc-400 hover:text-zinc-100 text-sm transition-colors"
               >
-                chi tiết
+                Chi tiết
                 <ShoppingBag className="h-4 w-4" />
               </Link>
             </CardFooter>

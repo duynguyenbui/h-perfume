@@ -77,6 +77,8 @@ export interface Config {
     shippingFees: ShippingFee;
     paymentStatuses: PaymentStatus;
     orders: Order;
+    conversations: Conversation;
+    messages: Message;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
     'payload-migrations': PayloadMigration;
@@ -84,6 +86,9 @@ export interface Config {
   collectionsJoins: {
     collections: {
       fragrances: 'fragrances';
+    };
+    conversations: {
+      messages: 'messages';
     };
   };
   collectionsSelect: {
@@ -98,6 +103,8 @@ export interface Config {
     shippingFees: ShippingFeesSelect<false> | ShippingFeesSelect<true>;
     paymentStatuses: PaymentStatusesSelect<false> | PaymentStatusesSelect<true>;
     orders: OrdersSelect<false> | OrdersSelect<true>;
+    conversations: ConversationsSelect<false> | ConversationsSelect<true>;
+    messages: MessagesSelect<false> | MessagesSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
     'payload-migrations': PayloadMigrationsSelect<false> | PayloadMigrationsSelect<true>;
@@ -324,7 +331,6 @@ export interface Coupon {
     validFrom: string;
     validTo: string;
   };
-  maxUsagePerUser?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -386,7 +392,6 @@ export interface PaymentStatus {
  */
 export interface Order {
   id: string;
-  orderId: string;
   orderer: string | User;
   lineItems: {
     fragrance: string | Fragrance;
@@ -404,6 +409,41 @@ export interface Order {
   finalAddress: string | ShippingAddress;
   paymentStatus: string | PaymentStatus;
   paymentMethod: 'momo' | 'cod';
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations".
+ */
+export interface Conversation {
+  id: string;
+  name: string;
+  participants: (string | User)[];
+  messages?: {
+    docs?: (string | Message)[];
+    hasNextPage?: boolean;
+    totalDocs?: number;
+  };
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages".
+ */
+export interface Message {
+  id: string;
+  conversation: string | Conversation;
+  sender: string | User;
+  role: 'Admin' | 'User';
+  content?: string | null;
+  attachments?:
+    | {
+        media: string | Media;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -457,6 +497,14 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'orders';
         value: string | Order;
+      } | null)
+    | ({
+        relationTo: 'conversations';
+        value: string | Conversation;
+      } | null)
+    | ({
+        relationTo: 'messages';
+        value: string | Message;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -687,7 +735,6 @@ export interface CouponsSelect<T extends boolean = true> {
         validFrom?: T;
         validTo?: T;
       };
-  maxUsagePerUser?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -744,7 +791,6 @@ export interface PaymentStatusesSelect<T extends boolean = true> {
  * via the `definition` "orders_select".
  */
 export interface OrdersSelect<T extends boolean = true> {
-  orderId?: T;
   orderer?: T;
   lineItems?:
     | T
@@ -764,6 +810,35 @@ export interface OrdersSelect<T extends boolean = true> {
   finalAddress?: T;
   paymentStatus?: T;
   paymentMethod?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "conversations_select".
+ */
+export interface ConversationsSelect<T extends boolean = true> {
+  name?: T;
+  participants?: T;
+  messages?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "messages_select".
+ */
+export interface MessagesSelect<T extends boolean = true> {
+  conversation?: T;
+  sender?: T;
+  role?: T;
+  content?: T;
+  attachments?:
+    | T
+    | {
+        media?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

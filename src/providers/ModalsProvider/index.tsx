@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useEffect, useState } from 'react'
+import { ImageDialogModal } from '@/components/Modals/ImageModal'
+import { AddressModal } from '@/components/Modals/AddressModal'
 
 export default function ModalsProvider() {
   const [isClient, setIsClient] = useState(false)
@@ -13,5 +15,10 @@ export default function ModalsProvider() {
     return null
   }
 
-  return <React.Fragment></React.Fragment>
+  return (
+    <React.Fragment>
+      <ImageDialogModal />
+      <AddressModal />
+    </React.Fragment>
+  )
 }

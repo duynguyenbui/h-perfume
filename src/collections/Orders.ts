@@ -15,18 +15,6 @@ export const Orders: CollectionConfig = {
   },
   fields: [
     {
-      name: 'orderId',
-      label: {
-        vi: 'Mã đơn hàng',
-      },
-      type: 'text',
-      required: true,
-      unique: true,
-      admin: {
-        position: 'sidebar',
-      },
-    },
-    {
       name: 'orderer',
       label: {
         vi: 'Người đặt hàng',

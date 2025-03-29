@@ -1,5 +1,5 @@
 import { RegisterForm } from '@/components/Forms/Register'
-import { GalleryVerticalEnd } from 'lucide-react'
+import { Frame } from 'lucide-react'
 import { getServerSideUser } from '@/get-serverside-user'
 import { redirect } from 'next/navigation'
 
@@ -16,7 +16,7 @@ export default async function Page() {
         <div className="flex justify-center gap-2 md:justify-start">
           <a href="#" className="flex items-center gap-2 font-medium">
             <div className="flex h-6 w-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
-              <GalleryVerticalEnd className="size-4" />
+              <Frame className="size-4" />
             </div>
             H-Perfume
           </a>

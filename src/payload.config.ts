@@ -19,6 +19,8 @@ import { ShippingAddresses } from './collections/ShippingAddresses'
 import { ShippingFees } from './collections/ShippingFees'
 import { PaymentStatuses } from './collections/PaymentStatuses'
 import { Orders } from './collections/Orders'
+import { Conversations } from './collections/Conversations'
+import { Messages } from './collections/Messages'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
@@ -29,6 +31,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
     components: {
+      beforeDashboard: ['./decorators/BeforeDashboard/index'],
       graphics: {
         Logo: './decorators/Logo/index',
         Icon: './decorators/Icon/index',
@@ -47,6 +50,8 @@ export default buildConfig({
     ShippingFees,
     PaymentStatuses,
     Orders,
+    Conversations,
+    Messages,
   ],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',

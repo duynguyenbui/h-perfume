@@ -1,5 +1,5 @@
 import Link from 'next/link'
-
+import { Frame } from 'lucide-react'
 export default function Footer() {
   return (
     <footer className="bg-background border-t border-border">
@@ -18,7 +18,7 @@ export default function Footer() {
           ].map((item) => (
             <div key={item} className="pb-6">
               <Link
-                href="https://www.hperfume.com.au"
+                href="/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-sm leading-6 text-muted-foreground hover:text-foreground"
@@ -29,7 +29,7 @@ export default function Footer() {
           ))}
         </nav>
         <p className="mt-10 text-center text-sm leading-5 text-muted-foreground">
-          Thiết kế & Phát triển với ❤️ bởi hPerfume. Bản quyền thuộc về hPerfume
+          Thiết kế & Phát triển với ❤️ bởi H-Perfume. Bản quyền thuộc về H-Perfume
         </p>
       </div>
     </footer>

@@ -90,6 +90,18 @@ export const seed = async ({ payload }: { payload: Payload }) => {
         id: { exists: true },
       },
     }),
+    payload.delete({
+      collection: 'conversations',
+      where: {
+        id: { exists: true },
+      },
+    }),
+    payload.delete({
+      collection: 'messages',
+      where: {
+        id: { exists: true },
+      },
+    }),
   ])
 
   const currentDate = new Date()
@@ -225,6 +237,7 @@ export const seed = async ({ payload }: { payload: Payload }) => {
 
   const coupons = [
     {
+      code: 'SUMMER10',
       description: 'Khuyến mãi tháng 3',
       minimumPriceToUse: 150000,
       quantity: 50,
@@ -236,6 +249,7 @@ export const seed = async ({ payload }: { payload: Payload }) => {
       },
     },
     {
+      code: 'WEEKEND50',
       description: 'Ưu đãi đặc biệt cuối tuần',
       minimumPriceToUse: 300000,
       quantity: 30,
@@ -247,6 +261,7 @@ export const seed = async ({ payload }: { payload: Payload }) => {
       },
     },
     {
+      code: 'NEWUSER15',
       description: 'Coupon dành cho khách mới',
       minimumPriceToUse: 100000,
       quantity: 100,
@@ -258,6 +273,7 @@ export const seed = async ({ payload }: { payload: Payload }) => {
       },
     },
     {
+      code: 'MIDMONTH30',
       description: 'Khuyến mãi giữa tháng',
       minimumPriceToUse: 250000,
       quantity: 40,
@@ -269,6 +285,7 @@ export const seed = async ({ payload }: { payload: Payload }) => {
       },
     },
     {
+      code: 'FLASH48',
       description: 'Flash Sale 48 giờ',
       minimumPriceToUse: 500000,
       quantity: 10,
@@ -315,8 +332,8 @@ export const seed = async ({ payload }: { payload: Payload }) => {
 
   for (let i = 1; i <= 10; i++) {
     const imageBuffer = await readFilePayload(
-      // 'D:/Projects/PayloadCMS/h-perfume/pics', // Change it depends on your local path
-      'E:/project/h-perfume/pics', // Change it depends on your local path
+      'D:/Projects/PayloadCMS/h-perfume/pics', // Change it depends on your local path
+      // 'E:/project/h-perfume/pics', // Change it depends on your local path
       `${i}.jpg`,
     )
 

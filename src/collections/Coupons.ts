@@ -155,10 +155,5 @@ export const Coupons: CollectionConfig = {
         },
       ],
     },
-    {
-      name: 'maxUsagePerUser',
-      type: 'number',
-      label: 'Số lần tối đa người dùng sử dụng',
-    },
   ],
 }

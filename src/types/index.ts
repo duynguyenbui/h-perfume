@@ -1,12 +1,17 @@
-import {
-  Coupon,
-  Fragrance,
-  PaymentStatus,
-  ShippingAddress,
-  ShippingStatus,
-  User,
-} from '@/payload-types'
+import { Coupon, PaymentStatus, ShippingAddress, ShippingStatus, User } from '@/payload-types'
 import type { Permissions } from 'payload'
+import { Server as NetServer, Socket } from 'net'
+import { NextApiResponse } from 'next'
+import { Socket as SocketIOServer } from 'socket.io'
+
+// Socket IO Types
+export type NextApiResponseServerIO = NextApiResponse & {
+  socket: Socket & {
+    server: NetServer & {
+      io: SocketIOServer
+    }
+  }
+}
 
 export type ResetPassword = (args: {
   password: string
@@ -38,15 +43,7 @@ export interface AuthContext {
   user?: null | User
 }
 
-export enum ModalType {
-  NONE = 0,
-  SIZE_SELECTOR = 1,
-  ADD_ADDRESS = 2,
-  ADD_TO_CART = 3,
-}
-
 export interface OrderToCreate {
-  orderId: string
   orderer: string | User
   lineItems: Array<{
     fragrance: string
@@ -71,4 +68,18 @@ export interface LineItem {
   quantity: number
   discount: number
   price: number
+}
+
+export interface Ward {
+  name: string
+}
+
+export interface District {
+  name: string
+  wards: Ward[]
+}
+
+export interface Province {
+  name: string
+  districts: District[]
 }

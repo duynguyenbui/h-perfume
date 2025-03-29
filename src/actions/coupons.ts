@@ -5,7 +5,6 @@ import { getServerSideUser } from '@/get-serverside-user'
 
 export async function getValidCoupons({ minimumPrice }: { minimumPrice: number }) {
   const { user } = await getServerSideUser()
-  console.log(minimumPrice) //lấy giá trị minimumPrice ok
   if (!user) {
     return { success: false, message: 'Unauthorized' }
   }
@@ -17,7 +16,7 @@ export async function getValidCoupons({ minimumPrice }: { minimumPrice: number }
   const currentDate = new Date()
 
   const payload = await getPayloadClient()
-  console.log('Payload instance:', payload) // Kiểm tra giá trị payload
+  
   const { docs: coupons, totalDocs } = await payload.find({
     collection: 'coupons',
     where: {
