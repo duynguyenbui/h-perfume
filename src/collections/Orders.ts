@@ -15,6 +15,18 @@ export const Orders: CollectionConfig = {
   },
   fields: [
     {
+      name: 'orderId',
+      label: {
+        vi: 'Mã đơn hàng',
+      },
+      type: 'text',
+      required: true,
+      unique: true,
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'orderer',
       label: {
         vi: 'Người đặt hàng',
@@ -175,9 +187,9 @@ export const Orders: CollectionConfig = {
       options: [
         {
           label: {
-            vi: 'Thanh toán trực tuyến (Stripe)',
+            vi: 'Thanh toán trực tuyến momo',
           },
-          value: 'stripe',
+          value: 'momo',
         },
         {
           label: {
@@ -186,7 +198,7 @@ export const Orders: CollectionConfig = {
           value: 'cod',
         },
       ],
-      defaultValue: 'stripe',
+      defaultValue: 'momo',
     },
   ],
 }

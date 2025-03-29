@@ -35,8 +35,8 @@ import { TPayloadCheckoutValidator } from '@/validations'
 import { useForm } from 'react-hook-form'
 import { createOrder } from '@/actions/orders'
 import { useRouter } from 'next/navigation'
-
 import { getValidCoupons } from '@/actions/coupons'
+import { CreateMomoPaymentRequest } from '@/types/momo'
 
 export default function CheckoutDetail() {
   const { user } = useAuth()
@@ -47,7 +47,6 @@ export default function CheckoutDetail() {
   const [shippingFee, setShippingFee] = useState<ShippingFee | null>(null)
   const [totalPrice, setTotalPrice] = useState<number>(0)
   const [discountAmount, setDiscountAmount] = useState<number>(0)
-
   const [coupons, setCoupons] = useState<{ id: string; code: string; discountAmount: number }[]>([])
   const [selectedCouponDetails, setSelectedCouponDetails] = useState<any>(null)
   const [selectedCoupon, setSelectedCoupon] = useState<string | null>(null)
@@ -58,65 +57,65 @@ export default function CheckoutDetail() {
   const form = useForm<TPayloadCheckoutValidator>({
     resolver: zodResolver(PayloadCheckoutValidator),
     defaultValues: {
-      lineItems: lineItems.map((item) => ({ id: item.id, quantity: item.quantity })),
-      paymentMethod: 'stripe',
+      lineItems: lineItems.length
+        ? lineItems.map((item) => ({ id: item.id, quantity: item.quantity }))
+        : [{ id: 'placeholder', quantity: 1 }],
+      paymentMethod: 'cod',
+      shippingAddressId: '',
+      shippingFeeId: '',
+      couponId: undefined,
     },
   })
 
   const formatPrice = (price: number) => {
-    return new Intl.NumberFormat('vi-VN', {
-      style: 'currency',
-      currency: 'VND',
-    }).format(price)
+    return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
   }
-  // fecth list shipping address
+
   useEffect(() => {
     if (user) {
       getShippingAddresses().then((res) => {
-        if (res.success) {
-          setShippingAddresses(res.data || [])
+        if (res.success && res.data?.length) {
+          setShippingAddresses(res.data)
+          if (!form.getValues('shippingAddressId')) {
+            form.setValue('shippingAddressId', res.data[0].id)
+          }
         } else {
           toast.error(res.message)
         }
+        form.trigger() // Kích hoạt validation toàn bộ form
       })
     }
-  }, [user])
-  // Calculate the total price of the order
+  }, [user, form])
+
   useEffect(() => {
     if (lineItems.length) {
       const subtotal = lineItems.reduce((acc, item) => {
         return acc + (item.price - (item.price * item.discount) / 100) * item.quantity
       }, 0)
-
       setTotalPrice(subtotal)
 
       getShippingFeeByMinimumPrice({ minimumPrice: subtotal }).then((res) => {
-        if (res.success) {
-          setShippingFee(res.data || null)
-          if (res.data) {
-            form.setValue('shippingFeeId', res.data.id)
-          }
+        if (res.success && res.data) {
+          setShippingFee(res.data)
+          form.setValue('shippingFeeId', res.data.id)
         } else {
           toast.error(res.message)
         }
+        form.trigger() // Kích hoạt validation toàn bộ form
       })
     }
   }, [lineItems, form])
-  // Sync the list of cart items
+
   useEffect(() => {
-    form.setValue(
-      'lineItems',
-      lineItems.map((item) => ({ id: item.id, quantity: item.quantity })),
-    )
+    const updatedLineItems = lineItems.map((item) => ({ id: item.id, quantity: item.quantity }))
+    form.setValue('lineItems', updatedLineItems)
+    form.trigger() // Kích hoạt validation toàn bộ form
   }, [lineItems, form])
-  // Fetch the list of valid coupons
+
   useEffect(() => {
     if (user && totalPrice > 0) {
-      console.log('giá tiền:', totalPrice)
-
       getValidCoupons({ minimumPrice: totalPrice }).then((res) => {
         if (res.success) {
-          console.log(res)
           setCoupons(res.data || [])
         } else {
           toast.error(res.message)
@@ -125,32 +124,90 @@ export default function CheckoutDetail() {
     }
   }, [user, totalPrice])
 
-  // calculateDiscountAmount type percentage and fixed
   const calculateDiscount = (coupon: any, total: number) => {
     if (coupon.discountType === 'percentage') {
-      return (total * coupon.discountAmount) / 100
+      const discount = (total * coupon.discountAmount) / 100
+      return discount
     } else if (coupon.discountType === 'fixed') {
       return coupon.discountAmount
     }
+    return 0
   }
 
-  const onSubmit = (data: TPayloadCheckoutValidator) => {
-    const { success } = PayloadCheckoutValidator.safeParse(data)
-
+  const onSubmit = async (data: TPayloadCheckoutValidator) => {
+    const { success, error } = PayloadCheckoutValidator.safeParse(data)
     if (!success) {
       toast.error('Vui lòng kiểm tra lại thông tin đơn hàng')
       return
     }
 
-    createOrder(data).then((res) => {
-      if (res.success) {
-        toast.success('Đơn hàng đã được tạo thành công!')
-        clearCart()
-        router.push('/orders')
+    const orderId = `ORDER-${Date.now()}`
+
+    const orderData = {
+      orderId,
+      lineItems: data.lineItems,
+      paymentMethod: data.paymentMethod,
+      shippingAddressId: data.shippingAddressId,
+      shippingFeeId: data.shippingFeeId,
+      couponId: data.couponId,
+    }
+
+    try {
+      if (data.paymentMethod === 'momo') {
+        console.log('Xử lý thanh toán Momo')
+        const requestBody: CreateMomoPaymentRequest = {
+          amount: totalAfterCoupon,
+          orderId,
+          returnUrl: `${window.location.origin}/orders`,
+          userId: user?.id || '',
+          lineItems: lineItems.map((item) => ({
+            id: item.id, // Sửa lại để khớp với CreateMomoPaymentRequest
+            quantity: item.quantity,
+            price: item.price,
+            discount: item.discount,
+            versionOfFragrance: 'default',
+          })),
+          shippingAddressId: data.shippingAddressId,
+          shippingFeeId: data.shippingFeeId,
+          couponId: data.couponId,
+          paymentMethod: data.paymentMethod,
+        }
+        console.log('Request body gửi đến endpoints/momo', requestBody)
+
+        const response = await fetch('endpoints/momo', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+        })
+
+        const result = await response.json()
+        console.log('Kết quả từ endpoints/momo:', result)
+
+        if (result.success && result.payUrl) {
+          console.log('Chuyển hướng đến trang thanh toán Momo:', result.payUrl)
+          window.location.href = result.payUrl
+        } else {
+          console.log('Thất bại khi tạo liên kết Momo:', result.message)
+          toast.error('Không thể tạo liên kết thanh toán Momo. Vui lòng thử lại.')
+        }
       } else {
-        toast.error(res.message)
+        console.log('Xử lý thanh toán COD')
+        const res = await createOrder(orderData)
+        console.log('Kết quả createOrder:', res)
+        if (res.success) {
+          console.log('Tạo đơn hàng COD thành công')
+          toast.success('Đơn hàng đã được tạo thành công!')
+          clearCart()
+          router.push('/orders')
+        } else {
+          console.log('Thất bại khi tạo đơn hàng COD:', res.message)
+          toast.error(res.message)
+        }
       }
-    })
+    } catch (error) {
+      console.error('Lỗi trong onSubmit:', error)
+      toast.error('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.')
+    }
   }
 
   if (!lineItems.length) {
@@ -224,7 +281,14 @@ export default function CheckoutDetail() {
                       name="shippingAddressId"
                       render={({ field }) => (
                         <FormItem>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <Select
+                            onValueChange={(value) => {
+                              field.onChange(value)
+                              console.log('Chọn địa chỉ giao hàng:', value)
+                              form.trigger() // Kích hoạt validation sau khi chọn
+                            }}
+                            defaultValue={field.value}
+                          >
                             <FormControl>
                               <SelectTrigger className="w-full">
                                 <SelectValue placeholder="Chọn địa chỉ" />
@@ -252,7 +316,6 @@ export default function CheckoutDetail() {
                       Mã Khuyến Mãi
                     </CardTitle>
                   </CardHeader>
-                  {/* Coupons */}
                   <CardContent className="p-6 space-y-4">
                     <FormField
                       control={form.control}
@@ -264,10 +327,11 @@ export default function CheckoutDetail() {
                               field.onChange(value)
                               setSelectedCoupon(value)
                               const coupon = coupons.find((c) => c.id === value)
-
                               setSelectedCouponDetails(coupon || null)
                               const discount = coupon ? calculateDiscount(coupon, totalPrice) : 0
                               setDiscountAmount(discount)
+
+                              form.trigger() // Kích hoạt validation sau khi chọn
                             }}
                             value={selectedCoupon || field.value}
                           >
@@ -314,7 +378,6 @@ export default function CheckoutDetail() {
                             {selectedCouponDetails?.minimumPriceToUse.toLocaleString()} VND
                           </strong>
                         </p>
-
                         <p className="text-sm">
                           Số lượng còn: <strong>{selectedCouponDetails?.quantity}</strong>
                         </p>
@@ -339,7 +402,11 @@ export default function CheckoutDetail() {
                       <FormItem>
                         <FormControl>
                           <RadioGroup
-                            onValueChange={field.onChange}
+                            onValueChange={(value) => {
+                              field.onChange(value)
+
+                              form.trigger() // Kích hoạt validation sau khi chọn
+                            }}
                             defaultValue={field.value}
                             className="space-y-4"
                           >
@@ -353,11 +420,11 @@ export default function CheckoutDetail() {
                               </Label>
                             </div>
                             <div className="flex items-center space-x-3 border rounded-md p-4 hover:bg-gray-50 cursor-pointer">
-                              <RadioGroupItem value="stripe" id="stripe" />
-                              <Label htmlFor="stripe" className="flex-1 cursor-pointer">
+                              <RadioGroupItem value="momo" id="momo" />
+                              <Label htmlFor="momo" className="flex-1 cursor-pointer">
                                 <div className="font-medium">Thanh Toán Online</div>
                                 <div className="text-sm text-muted-foreground">
-                                  Thanh toán qua Stripe
+                                  Thanh toán qua Momo
                                 </div>
                               </Label>
                             </div>
@@ -375,7 +442,7 @@ export default function CheckoutDetail() {
             <div className="lg:w-1/3 space-y-6">
               <Card className="shadow-md sticky top-4">
                 <CardHeader className="border-b pb-2">
-                  <CardTitle className="text-xl">Tổng Đơn Hàng</CardTitle>
+                  <CardTitle className="text-xl">Tổng cộng</CardTitle>
                 </CardHeader>
                 <CardContent className="p-6 space-y-6">
                   <div className="space-y-4">
@@ -410,11 +477,27 @@ export default function CheckoutDetail() {
                 <CardFooter className="p-6 pt-0">
                   <Button
                     type="submit"
-                    className="w-full py-6 text-lg"
+                    className="w-full py-6 text-lg bg-black hover:bg-gray-800"
                     size="lg"
-                    disabled={form.formState.isSubmitting}
+                    disabled={form.formState.isSubmitting || !form.formState.isValid}
                   >
-                    {form.formState.isSubmitting ? 'Đang xử lý...' : 'Thanh Toán'}
+                    {form.formState.isSubmitting ? (
+                      <span className="flex items-center">
+                        <svg className="animate-spin h-5 w-5 mr-2" viewBox="0 0 24 24">
+                          <circle
+                            cx="12"
+                            cy="12"
+                            r="10"
+                            stroke="currentColor"
+                            strokeWidth="4"
+                            fill="none"
+                          />
+                        </svg>
+                        Đang xử lý...
+                      </span>
+                    ) : (
+                      'Thanh Toánnnn'
+                    )}
                   </Button>
                 </CardFooter>
               </Card>

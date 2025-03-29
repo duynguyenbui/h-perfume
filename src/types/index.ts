@@ -46,20 +46,27 @@ export enum ModalType {
 }
 
 export interface OrderToCreate {
-  orderer: User
-  lineItems: LineItem[]
-  coupon?: (string | null) | Coupon
+  orderId: string
+  orderer: string | User
+  lineItems: Array<{
+    fragrance: string
+    versionOfFragrance: string
+    quantity: number
+    discount: number
+    price: number
+  }>
+  coupon?: string | Coupon | null
   totalPrice: number
   finalPrice: number
   shippingFee: number
-  shippingStatus: ShippingStatus
-  finalAddress: ShippingAddress
-  paymentStatus: PaymentStatus
-  paymentMethod: 'stripe' | 'cod'
+  shippingStatus: string | ShippingStatus
+  finalAddress: string | ShippingAddress
+  paymentStatus: string | PaymentStatus
+  paymentMethod: 'momo' | 'cod'
 }
 
 export interface LineItem {
-  fragrance: string | Fragrance
+  fragrance: string
   versionOfFragrance: string
   quantity: number
   discount: number

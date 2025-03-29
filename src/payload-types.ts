@@ -386,6 +386,7 @@ export interface PaymentStatus {
  */
 export interface Order {
   id: string;
+  orderId: string;
   orderer: string | User;
   lineItems: {
     fragrance: string | Fragrance;
@@ -402,7 +403,7 @@ export interface Order {
   shippingStatus: string | ShippingStatus;
   finalAddress: string | ShippingAddress;
   paymentStatus: string | PaymentStatus;
-  paymentMethod: 'stripe' | 'cod';
+  paymentMethod: 'momo' | 'cod';
   updatedAt: string;
   createdAt: string;
 }
@@ -743,6 +744,7 @@ export interface PaymentStatusesSelect<T extends boolean = true> {
  * via the `definition` "orders_select".
  */
 export interface OrdersSelect<T extends boolean = true> {
+  orderId?: T;
   orderer?: T;
   lineItems?:
     | T
