@@ -138,7 +138,7 @@ export const seed = async ({ payload }: { payload: Payload }) => {
     description: capitalize(faker.git.commitMessage()),
   }))
 
-  const createdShippingStatuses = await createPayloadData(
+  const   createdShippingStatuses = await createPayloadData(
     payload,
     'shippingStatuses',
     shippingStatuses,

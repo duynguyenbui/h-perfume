@@ -144,7 +144,6 @@ export default function Header() {
                         onClick={() => setIsOpen(false)}
                       >
                         <LogOutIcon className="h-5 w-5" />
-                        <span>Đăng xuất</span>
                       </Link>
                     </div>
                   ) : (
