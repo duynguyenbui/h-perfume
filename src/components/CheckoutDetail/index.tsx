@@ -496,7 +496,7 @@ export default function CheckoutDetail() {
                         Đang xử lý...
                       </span>
                     ) : (
-                      'Thanh Toánnnn'
+                      'Thanh Toánn'
                     )}
                   </Button>
                 </CardFooter>

@@ -10,9 +10,6 @@ export const Orders: CollectionConfig = {
       vi: 'Đơn hàng',
     },
   },
-  hooks: {
-    beforeChange: [],
-  },
   fields: [
     {
       name: 'orderer',

@@ -68,7 +68,7 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
   const { docs: paymentStatus } = await payload.find({
     collection: 'paymentStatuses',
     where: {
-      value: { equals: 'pending' }, // Sử dụng `value` thay vì `name` để khớp với schema
+      value: { equals: 'pending' },
     },
     limit: 1,
     depth: 0,
