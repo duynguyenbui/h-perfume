@@ -10,14 +10,8 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import AddressModal from './AddressSection/index'
 import { useCart } from '@/stores/CartStore'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -137,11 +131,9 @@ export default function CheckoutDetail() {
     try {
       if (data.paymentMethod === 'momo') {
         console.log('Xử lý thanh toán Momo')
-
-        // Gửi dữ liệu đơn hàng tới endpoint Momo, không tạo đơn hàng ở đây
         const requestBody = {
           amount: totalAfterCoupon,
-          checkoutData: orderData, // Gửi toàn bộ dữ liệu đơn hàng
+          checkoutData: orderData,
         }
 
         const response = await fetch('/api/endpoints/momo', {
@@ -251,27 +243,15 @@ export default function CheckoutDetail() {
                       name="shippingAddressId"
                       render={({ field }) => (
                         <FormItem>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value)
-                              console.log('Chọn địa chỉ giao hàng:', value)
-                              form.trigger()
-                            }}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Chọn địa chỉ" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-[300px] w-full overflow-y-auto">
-                              {shippingAddresses.map((address) => (
-                                <SelectItem key={address.id} value={address.id}>
-                                  {address.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <AddressModal
+                              onSelectAddress={(addressId: string) => {
+                                field.onChange(addressId)
+                                form.trigger()
+                              }}
+                              selectedAddressId={field.value}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}

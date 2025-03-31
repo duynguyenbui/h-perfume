@@ -51,7 +51,7 @@ export const useCouponStore = create<CouponState>((set, get) => ({
 
       const updatedValidCoupons = validCoupons.map((coupon) => {
         const collectedUsers =
-          coupon.collectedUsers?.map((u) => (typeof u === 'string' ? u : u.id)) || []
+          coupon.collectedUsers?.map((u: string | User) => (typeof u === 'string' ? u : u.id)) || []
         const isCollected = userId ? collectedUsers.includes(userId) : false
         return {
           ...coupon,
@@ -73,10 +73,16 @@ export const useCouponStore = create<CouponState>((set, get) => ({
       set((state) => {
         const coupon = state.validCoupons.find((coupon) => coupon.id === couponId)
         const collectedUsers =
-          coupon?.collectedUsers?.map((u) => (typeof u === 'string' ? u : u.id)) || []
+          coupon?.collectedUsers?.map((u: string | User) => (typeof u === 'string' ? u : u.id)) ||
+          []
         const isCollected = collectedUsers.includes(userId)
 
         if (!isCollected && coupon) {
+          if (coupon.quantity <= 0) {
+            console.warn(`Coupon ${couponId} has no remaining quantity`)
+            return state
+          }
+
           return {
             validCoupons: state.validCoupons.map((coupon) =>
               coupon.id === couponId
@@ -84,6 +90,7 @@ export const useCouponStore = create<CouponState>((set, get) => ({
                     ...coupon,
                     collectedUsers: [...(coupon.collectedUsers ?? []), userId],
                     isCollected: true,
+                    quantity: coupon.quantity - 1,
                   }
                 : coupon,
             ),
@@ -96,6 +103,7 @@ export const useCouponStore = create<CouponState>((set, get) => ({
       })
     } else {
       console.error(response.message)
+      throw new Error(response.message)
     }
   },
 

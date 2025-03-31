@@ -2,11 +2,11 @@
 
 import { Ticket } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { useCouponStore } from '@/stores/CouponStore'
+import { useCouponStore, Coupon } from '@/stores/CouponStore'
 import { useAuth } from '@/providers/AuthProvider'
 
 interface CouponCardProps {
-  coupon: any
+  coupon: Coupon
   isExpired?: boolean
   isCollected?: boolean
 }
@@ -35,8 +35,17 @@ export default function CouponCard({
       return
     }
 
-    await collectCouponAction(coupon.id, user.id)
-    alert(`Bạn đã thu thập mã: ${coupon.code}`)
+    if (coupon.quantity <= 0) {
+      alert('Mã giảm giá này đã hết!')
+      return
+    }
+
+    try {
+      await collectCouponAction(coupon.id, user.id)
+      alert(`Bạn đã thu thập mã: ${coupon.code}`)
+    } catch (error) {
+      alert('Có lỗi xảy ra khi thu thập mã: ' + ((error as Error).message || 'Unknown error'))
+    }
   }
 
   return (
@@ -58,31 +67,36 @@ export default function CouponCard({
         className={`w-14 h-14 mx-auto mb-4 ${isExpired ? 'text-gray-400' : 'text-indigo-600'}`}
       />
       <h2 className="text-xl font-bold text-center mb-2 tracking-wide">
-        {coupon?.code || 'Mã không hợp lệ'}
+        {coupon.code || 'Mã không hợp lệ'}
       </h2>
       <p className="text-sm text-center text-gray-600 italic mb-3">
-        {coupon?.description || 'Không có mô tả'}
+        {coupon.description || 'Không có mô tả'}
       </p>
       <div className="space-y-2 text-center">
         <p className="text-base font-semibold text-green-600">
           Giảm:{' '}
-          {coupon?.discountType === 'percentage'
-            ? `${coupon?.discountAmount}%`
-            : `${coupon?.discountAmount.toLocaleString()}₫`}
+          {coupon.discountType === 'percentage'
+            ? `${coupon.discountAmount}%`
+            : `${coupon.discountAmount.toLocaleString()}₫`}
         </p>
         <p className="text-sm text-gray-600">
-          Tối thiểu: {coupon?.minimumPriceToUse.toLocaleString()}₫
+          Tối thiểu: {coupon.minimumPriceToUse.toLocaleString()}₫
         </p>
-        <p className="text-xs text-gray-500">Còn lại: {coupon?.quantity}</p>
+        <p className="text-xs text-gray-500">Còn lại: {coupon.quantity}</p>
       </div>
 
       <div className="mt-4">
-        {!isExpired && !isCollected && (
+        {!isExpired && !isCollected && coupon.quantity > 0 && (
           <Button
             className="w-full bg-indigo-600 hover:bg-indigo-700 transition-colors duration-200"
             onClick={handleCollect}
           >
             📥 Thu Thập Ngay
+          </Button>
+        )}
+        {!isExpired && !isCollected && coupon.quantity <= 0 && (
+          <Button className="w-full bg-gray-300 text-gray-600 cursor-not-allowed" disabled>
+            Hết Mã
           </Button>
         )}
         {!isExpired && isCollected && (
