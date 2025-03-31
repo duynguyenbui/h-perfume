@@ -10,14 +10,8 @@ import {
   TableCell,
 } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
+import AddressModal from './AddressSection/index'
 import { useCart } from '@/stores/CartStore'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group'
 import { Label } from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
@@ -25,18 +19,22 @@ import { MapPin, CreditCard, ShoppingBag } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/providers/AuthProvider'
 import { getShippingAddresses } from '@/actions/addresses'
-import { ShippingAddress, ShippingFee } from '@/payload-types'
+import { ShippingAddress, ShippingFee, Coupon as PayloadCoupon } from '@/payload-types'
 import { toast } from 'sonner'
 import { getShippingFeeByMinimumPrice } from '@/actions/shippingFees'
 import { Form, FormField, FormItem, FormControl, FormMessage } from '@/components/ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
-import { PayloadCheckoutValidator } from '@/validations'
-import { TPayloadCheckoutValidator } from '@/validations'
+import { PayloadCheckoutValidator, TPayloadCheckoutValidator } from '@/validations'
 import { useForm } from 'react-hook-form'
 import { createOrder } from '@/actions/orders'
 import { useRouter } from 'next/navigation'
-import { getValidCoupons } from '@/actions/coupons'
-import { CreateMomoPaymentRequest } from '@/types/momo'
+import CouponSection from './CouponSection'
+
+interface MomoPaymentResponse {
+  success: boolean
+  payUrl?: string
+  message?: string
+}
 
 export default function CheckoutDetail() {
   const { user } = useAuth()
@@ -47,9 +45,7 @@ export default function CheckoutDetail() {
   const [shippingFee, setShippingFee] = useState<ShippingFee | null>(null)
   const [totalPrice, setTotalPrice] = useState<number>(0)
   const [discountAmount, setDiscountAmount] = useState<number>(0)
-  const [coupons, setCoupons] = useState<{ id: string; code: string; discountAmount: number }[]>([])
-  const [selectedCouponDetails, setSelectedCouponDetails] = useState<any>(null)
-  const [selectedCoupon, setSelectedCoupon] = useState<string | null>(null)
+  const [selectedCoupons, setSelectedCoupons] = useState<PayloadCoupon[]>([])
 
   const totalBeforeCoupon = totalPrice + (shippingFee?.fee || 0)
   const totalAfterCoupon = Math.max(totalBeforeCoupon - discountAmount, 0)
@@ -71,6 +67,11 @@ export default function CheckoutDetail() {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(price)
   }
 
+  const handleSetDiscountAmount = (amount: number, coupons: PayloadCoupon[]) => {
+    setDiscountAmount(amount)
+    setSelectedCoupons(coupons)
+  }
+
   useEffect(() => {
     if (user) {
       getShippingAddresses().then((res) => {
@@ -82,7 +83,7 @@ export default function CheckoutDetail() {
         } else {
           toast.error(res.message)
         }
-        form.trigger() // Kích hoạt validation toàn bộ form
+        form.trigger()
       })
     }
   }, [user, form])
@@ -101,7 +102,7 @@ export default function CheckoutDetail() {
         } else {
           toast.error(res.message)
         }
-        form.trigger() // Kích hoạt validation toàn bộ form
+        form.trigger()
       })
     }
   }, [lineItems, form])
@@ -109,30 +110,8 @@ export default function CheckoutDetail() {
   useEffect(() => {
     const updatedLineItems = lineItems.map((item) => ({ id: item.id, quantity: item.quantity }))
     form.setValue('lineItems', updatedLineItems)
-    form.trigger() // Kích hoạt validation toàn bộ form
+    form.trigger()
   }, [lineItems, form])
-
-  useEffect(() => {
-    if (user && totalPrice > 0) {
-      getValidCoupons({ minimumPrice: totalPrice }).then((res) => {
-        if (res.success) {
-          setCoupons(res.data || [])
-        } else {
-          toast.error(res.message)
-        }
-      })
-    }
-  }, [user, totalPrice])
-
-  const calculateDiscount = (coupon: any, total: number) => {
-    if (coupon.discountType === 'percentage') {
-      const discount = (total * coupon.discountAmount) / 100
-      return discount
-    } else if (coupon.discountType === 'fixed') {
-      return coupon.discountAmount
-    }
-    return 0
-  }
 
   const onSubmit = async (data: TPayloadCheckoutValidator) => {
     const { success, error } = PayloadCheckoutValidator.safeParse(data)
@@ -141,10 +120,7 @@ export default function CheckoutDetail() {
       return
     }
 
-    const orderId = `ORDER-${Date.now()}`
-
     const orderData = {
-      orderId,
       lineItems: data.lineItems,
       paymentMethod: data.paymentMethod,
       shippingAddressId: data.shippingAddressId,
@@ -155,33 +131,19 @@ export default function CheckoutDetail() {
     try {
       if (data.paymentMethod === 'momo') {
         console.log('Xử lý thanh toán Momo')
-        const requestBody: CreateMomoPaymentRequest = {
+        const requestBody = {
           amount: totalAfterCoupon,
-          orderId,
-          returnUrl: `${window.location.origin}/orders`,
-          userId: user?.id || '',
-          lineItems: lineItems.map((item) => ({
-            id: item.id, // Sửa lại để khớp với CreateMomoPaymentRequest
-            quantity: item.quantity,
-            price: item.price,
-            discount: item.discount,
-            versionOfFragrance: 'default',
-          })),
-          shippingAddressId: data.shippingAddressId,
-          shippingFeeId: data.shippingFeeId,
-          couponId: data.couponId,
-          paymentMethod: data.paymentMethod,
+          checkoutData: orderData,
         }
-        console.log('Request body gửi đến endpoints/momo', requestBody)
 
-        const response = await fetch('endpoints/momo', {
+        const response = await fetch('/api/endpoints/momo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
         })
 
-        const result = await response.json()
-        console.log('Kết quả từ endpoints/momo:', result)
+        const result: MomoPaymentResponse = await response.json()
+        console.log('Kết quả từ api/endpoints/momo:', result)
 
         if (result.success && result.payUrl) {
           console.log('Chuyển hướng đến trang thanh toán Momo:', result.payUrl)
@@ -281,27 +243,15 @@ export default function CheckoutDetail() {
                       name="shippingAddressId"
                       render={({ field }) => (
                         <FormItem>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value)
-                              console.log('Chọn địa chỉ giao hàng:', value)
-                              form.trigger() // Kích hoạt validation sau khi chọn
-                            }}
-                            defaultValue={field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Chọn địa chỉ" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-[300px] w-full overflow-y-auto">
-                              {shippingAddresses.map((address) => (
-                                <SelectItem key={address.id} value={address.id}>
-                                  {address.name}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
+                          <FormControl>
+                            <AddressModal
+                              onSelectAddress={(addressId: string) => {
+                                field.onChange(addressId)
+                                form.trigger()
+                              }}
+                              selectedAddressId={field.value}
+                            />
+                          </FormControl>
                           <FormMessage />
                         </FormItem>
                       )}
@@ -309,82 +259,11 @@ export default function CheckoutDetail() {
                   </CardContent>
                 </Card>
 
-                <Card className="shadow-md w-full md:w-1/2">
-                  <CardHeader className="border-b pb-2">
-                    <CardTitle className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5" />
-                      Mã Khuyến Mãi
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="p-6 space-y-4">
-                    <FormField
-                      control={form.control}
-                      name="couponId"
-                      render={({ field }) => (
-                        <FormItem>
-                          <Select
-                            onValueChange={(value) => {
-                              field.onChange(value)
-                              setSelectedCoupon(value)
-                              const coupon = coupons.find((c) => c.id === value)
-                              setSelectedCouponDetails(coupon || null)
-                              const discount = coupon ? calculateDiscount(coupon, totalPrice) : 0
-                              setDiscountAmount(discount)
-
-                              form.trigger() // Kích hoạt validation sau khi chọn
-                            }}
-                            value={selectedCoupon || field.value}
-                          >
-                            <FormControl>
-                              <SelectTrigger className="w-full">
-                                <SelectValue placeholder="Chọn mã khuyến mãi" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent className="max-h-[300px] w-full overflow-y-auto">
-                              {coupons.length > 0 ? (
-                                coupons.map((coupon) => (
-                                  <SelectItem key={coupon.id} value={coupon.id}>
-                                    {coupon.code}
-                                  </SelectItem>
-                                ))
-                              ) : (
-                                <div className="p-2 text-center text-gray-500">
-                                  Không có mã giảm giá hợp lệ
-                                </div>
-                              )}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-
-                    {selectedCoupon && selectedCouponDetails && (
-                      <div className="p-4 bg-gray-100 rounded-md">
-                        <p className="text-sm text-gray-700">
-                          📢 <strong>{selectedCouponDetails?.description}</strong>
-                        </p>
-                        <p className="text-sm">
-                          Giảm giá:{' '}
-                          <strong>
-                            {selectedCouponDetails.discountType === 'percentage'
-                              ? `${selectedCouponDetails.discountAmount}%`
-                              : formatPrice(selectedCouponDetails.discountAmount)}
-                          </strong>
-                        </p>
-                        <p className="text-sm">
-                          Đơn tối thiểu:{' '}
-                          <strong>
-                            {selectedCouponDetails?.minimumPriceToUse.toLocaleString()} VND
-                          </strong>
-                        </p>
-                        <p className="text-sm">
-                          Số lượng còn: <strong>{selectedCouponDetails?.quantity}</strong>
-                        </p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
+                <CouponSection
+                  form={form}
+                  totalPrice={totalPrice}
+                  setDiscountAmount={handleSetDiscountAmount}
+                />
               </div>
 
               <Card className="shadow-md">
@@ -404,8 +283,7 @@ export default function CheckoutDetail() {
                           <RadioGroup
                             onValueChange={(value) => {
                               field.onChange(value)
-
-                              form.trigger() // Kích hoạt validation sau khi chọn
+                              form.trigger()
                             }}
                             defaultValue={field.value}
                             className="space-y-4"
@@ -454,15 +332,23 @@ export default function CheckoutDetail() {
                       <span className="text-muted-foreground">Thuế (10%)</span>
                       <span>Đã bao gồm trong tạm tính</span>
                     </div>
-                    <div className="flex justify-between">
-                      <span className="text-muted-foreground">Giảm giá (Coupon)</span>
-                      <span>
-                        -{formatPrice(discountAmount)}
-                        {selectedCouponDetails?.discountType === 'percentage' && (
-                          <span className="ml-1">({selectedCouponDetails.discountAmount}%)</span>
-                        )}
-                      </span>
-                    </div>
+                    {selectedCoupons.length > 0 && (
+                      <div className="space-y-2">
+                        <span className="text-muted-foreground">Giảm giá (Coupon):</span>
+                        {selectedCoupons.map((coupon) => (
+                          <div key={coupon.id} className="flex justify-between text-sm">
+                            <span>{coupon.code}</span>
+                            <span>
+                              {coupon.discountType === 'percentage'
+                                ? `-${coupon.discountAmount}% (${formatPrice(
+                                    (totalPrice * coupon.discountAmount) / 100,
+                                  )})`
+                                : `-${formatPrice(coupon.discountAmount)}`}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    )}
                     <div className="flex justify-between">
                       <span className="text-muted-foreground">Phí vận chuyển</span>
                       <span>{formatPrice(shippingFee?.fee || 0)}</span>

@@ -3,6 +3,7 @@ import crypto from 'crypto'
 import { MomoIPNRequest } from '@/types/momo'
 import { updatePaymentStatus } from '@/actions/orders'
 
+// Định nghĩa các _id của trạng thái thanh toán từ collection paymentStatus
 const PAYMENT_STATUS_IDS = {
   PENDING: '67d83c2d5474115f08276b48', // "Pending"
   PAID: '67d83c2d5474115f08276b49', // "Paid"
@@ -11,7 +12,9 @@ const PAYMENT_STATUS_IDS = {
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
+    // Phân tích dữ liệu từ request body (IPN từ Momo)
     const body: MomoIPNRequest = await request.json()
+    console.log('📥 Dữ liệu IPN từ Momo:', JSON.stringify(body, null, 2))
     const {
       partnerCode,
       orderId,
@@ -28,9 +31,11 @@ export async function POST(request: Request): Promise<NextResponse> {
       signature,
     } = body
 
+    // Lấy secretKey và accessKey từ biến môi trường
     const secretKey = process.env.MOMO_SECRET_KEY
     const accessKey = process.env.MOMO_ACCESS_KEY
 
+    // Kiểm tra biến môi trường
     if (!secretKey || !accessKey) {
       console.error('Thiếu MOMO_SECRET_KEY hoặc MOMO_ACCESS_KEY trong biến môi trường')
       return NextResponse.json(
@@ -77,6 +82,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       )
     }
 
+    // Trả về phản hồi cho Momo
     return NextResponse.json({
       success: true,
       message: 'Xác minh và xử lý thành công',
