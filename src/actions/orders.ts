@@ -41,7 +41,7 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
       depth: 0,
     })
     if (!shippingFee || typeof shippingFee.fee !== 'number') {
-      console.warn(' Invalid shipping fee:', shippingFeeId)
+      console.warn('Invalid shipping fee:', shippingFeeId)
       return {
         success: false,
         message: 'Phí vận chuyển không tồn tại hoặc không hợp lệ',
@@ -120,7 +120,7 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
         depth: 0,
       })
       if (!versionOfFragrance || versionOfFragrance.length === 0) {
-        console.warn(' No version found for fragrance:', fragrance.name)
+        console.warn('No version found for fragrance:', fragrance.name)
         return {
           success: false,
           message: `Không tìm thấy phiên bản cho sản phẩm ${fragrance.name}`,
@@ -152,10 +152,53 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
         depth: 0,
       })
       if (!coupon) {
-        console.warn(' Coupon not found:', couponId)
+        console.warn('Coupon not found:', couponId)
         return { success: false, message: 'Mã giảm giá không tồn tại', data: undefined }
       }
 
+      // Kiểm tra xem người dùng đã thu thập mã giảm giá này chưa
+      const collectedUsers = coupon.collectedUsers || []
+      if (!collectedUsers.includes(user.id)) {
+        console.warn(`User ${user.id} has not collected coupon ${coupon.code}`)
+        return { success: false, message: 'Bạn chưa thu thập mã giảm giá này', data: undefined }
+      }
+
+      // Kiểm tra xem người dùng đã sử dụng mã giảm giá này chưa
+      const usedUsers = coupon.currentUse || []
+      if (usedUsers.includes(user.id)) {
+        console.warn(`User ${user.id} has already used coupon ${coupon.code}`)
+        return { success: false, message: 'Bạn đã sử dụng mã giảm giá này rồi', data: undefined }
+      }
+
+      // Kiểm tra thời gian hiệu lực của mã giảm giá
+      const currentDate = new Date()
+      if (
+        currentDate < new Date(coupon.effectivePeriod.validFrom) ||
+        currentDate > new Date(coupon.effectivePeriod.validTo)
+      ) {
+        console.warn(`Coupon ${coupon.code} is not valid at this time`)
+        return { success: false, message: 'Mã giảm giá đã hết hạn', data: undefined }
+      }
+
+      // Kiểm tra số lượng mã giảm giá còn lại
+      if (coupon.quantity <= 0) {
+        console.warn(`Coupon ${coupon.code} is out of stock`)
+        return { success: false, message: 'Mã giảm giá đã hết', data: undefined }
+      }
+
+      // Kiểm tra giá trị đơn hàng tối thiểu
+      if (totalPrice < coupon.minimumPriceToUse) {
+        console.warn(
+          `Order total ${totalPrice} is less than minimum price ${coupon.minimumPriceToUse} for coupon ${coupon.code}`,
+        )
+        return {
+          success: false,
+          message: `Đơn hàng tối thiểu ${coupon.minimumPriceToUse.toLocaleString('vi-VN')}₫ để sử dụng mã này`,
+          data: undefined,
+        }
+      }
+
+      // Tính toán giảm giá
       if (coupon.discountType === 'percentage') {
         finalPrice -= (totalPrice * coupon.discountAmount) / 100
       } else if (coupon.discountType === 'fixed') {
@@ -182,11 +225,6 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
       data: orderToBeCreated,
     })
 
-    if (!order) {
-      console.error('Failed to create order')
-      return { success: false, message: 'Lỗi khi tạo đơn hàng', data: undefined }
-    }
-
     // Cập nhật số lượng tồn kho
     await Promise.all(
       lineItemsToBeCreated.map(async (lineItem) => {
@@ -206,6 +244,19 @@ export async function createOrder(orderToCreate: TPayloadCheckoutValidator) {
         }
       }),
     )
+
+    // Nếu có coupon, cập nhật trường currentUse
+    if (coupon) {
+      const usedUsers = coupon.currentUse || []
+      await payload.update({
+        collection: 'coupons',
+        id: coupon.id,
+        data: {
+          currentUse: [...usedUsers, user.id],
+        },
+      })
+      console.log(`User ${user.id} has been added to currentUse for coupon ${coupon.code}`)
+    }
 
     console.log(`Order created successfully: ${order.id}`)
     return { success: true, message: 'Tạo đơn hàng thành công', data: order }

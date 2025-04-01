@@ -29,7 +29,8 @@ import { useForm } from 'react-hook-form'
 import { createOrder } from '@/actions/orders'
 import { useRouter } from 'next/navigation'
 import CouponSection from './CouponSection'
-
+// PaymentStrategies
+import { PaymentContext, CodPaymentStrategy, MomoPaymentStrategy } from '@/lib/PaymentStrategies'
 interface MomoPaymentResponse {
   success: boolean
   payUrl?: string
@@ -40,7 +41,8 @@ export default function CheckoutDetail() {
   const { user } = useAuth()
   const { lineItems, clearCart } = useCart()
   const router = useRouter()
-
+  // PaymentStrategies
+  const [paymentContext, setPaymentContext] = useState<PaymentContext | null>(null)
   const [shippingAddresses, setShippingAddresses] = useState<ShippingAddress[]>([])
   const [shippingFee, setShippingFee] = useState<ShippingFee | null>(null)
   const [totalPrice, setTotalPrice] = useState<number>(0)
@@ -71,7 +73,7 @@ export default function CheckoutDetail() {
     setDiscountAmount(amount)
     setSelectedCoupons(coupons)
   }
-
+  // useEffect shippingAddress
   useEffect(() => {
     if (user) {
       getShippingAddresses().then((res) => {
