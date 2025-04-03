@@ -48,7 +48,7 @@ export async function getValidCoupons({
     return { success: false, message: 'Failed to fetch valid coupons', data: [] }
   }
 }
-
+// action user lay coupons
 export async function collectCoupon(couponId: string): Promise<CouponResponse> {
   const { user } = await getServerSideUser()
   if (!user) {
@@ -94,22 +94,20 @@ export async function collectCoupon(couponId: string): Promise<CouponResponse> {
 }
 
 export async function getAllCoupons(): Promise<CouponResponse> {
+  const { user } = await getServerSideUser() // Lấy thông tin người dùng
   const payload = await getPayloadClient()
   const currentDate = new Date()
-  const expiredDate = new Date(currentDate)
-  expiredDate.setDate(expiredDate.getDate() - 1) // Lùi lại 1 ngày
-  const expiredISO = expiredDate.toISOString()
   const currentISO = currentDate.toISOString()
 
-  console.log('Ngày hết hạn (trừ 1 ngày):', expiredISO)
-  console.log('Ngày hiện tại:', currentISO)
+  console.log('getAllCoupons - Current Date:', currentISO)
+  console.log('getAllCoupons - User ID:', user?.id || 'No user logged in')
 
   try {
     const { docs: coupons } = await payload.find({
       collection: 'coupons',
       where: {
         or: [
-          { 'effectivePeriod.validTo': { less_than: expiredISO } }, // Hết hạn trước 1 ngày
+          { 'effectivePeriod.validTo': { less_than: currentISO } }, // Hết hạn trước ngày hiện tại
           {
             and: [
               { 'effectivePeriod.validFrom': { less_than_equal: currentISO } },
@@ -122,12 +120,43 @@ export async function getAllCoupons(): Promise<CouponResponse> {
       pagination: false,
     })
 
-    console.log('Tổng số mã giảm giá:', coupons.length)
+    // Thêm thuộc tính isCollected và isUsed cho từng coupon
+    const couponsWithStatus = coupons.map((coupon) => {
+      // Chuyển đổi collectedUsers và currentUse thành mảng các string (ID)
+      const collectedUsers = (coupon.collectedUsers || []).map((u: string | { id: string }) =>
+        typeof u === 'string' ? u : u.id,
+      )
+      const usedUsers = (coupon.currentUse || []).map((u: string | { id: string }) =>
+        typeof u === 'string' ? u : u.id,
+      )
+
+      const isCollected = user ? collectedUsers.includes(user.id) : false
+      const isUsed = user ? usedUsers.includes(user.id) : false
+
+      // Log chi tiết để kiểm tra
+      console.log('getAllCoupons - Coupon Status:', {
+        couponId: coupon.id,
+        code: coupon.code,
+        collectedUsers,
+        usedUsers,
+        userId: user?.id || 'No user',
+        isCollected,
+        isUsed,
+      })
+
+      return {
+        ...coupon,
+        isCollected, // Trạng thái "đã thu thập"
+        isUsed, // Trạng thái "đã sử dụng"
+      }
+    })
+
+    console.log('getAllCoupons - Total Coupons:', coupons.length)
 
     return {
       success: true,
       message: 'Lấy danh sách mã giảm giá thành công',
-      data: coupons,
+      data: couponsWithStatus,
     }
   } catch (error) {
     console.error('Lỗi khi lấy mã giảm giá:', error)
@@ -180,7 +209,7 @@ export async function getCollectedCoupons({
       collection: 'coupons',
       where: {
         and: [
-          { collectedUsers: { contains: user.id } }, // Chỉ lấy mã mà user đã thu thập
+          { collectedUsers: { contains: user.id } },
           { 'effectivePeriod.validFrom': { less_than_equal: currentDate } },
           { 'effectivePeriod.validTo': { greater_than_equal: currentDate } },
           { minimumPriceToUse: { less_than_equal: minimumPrice } },

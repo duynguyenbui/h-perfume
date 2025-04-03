@@ -1,4 +1,7 @@
-import { create } from 'zustand'
+// CouponStore.ts
+'use client'
+
+import { createStore, useStore } from 'zustand' // Sử dụng createStore và useStore thay vì create
 import { getAllCoupons, collectCoupon } from '@/actions/coupons'
 import { User } from '@/payload-types'
 
@@ -11,11 +14,13 @@ export interface Coupon {
   minimumPriceToUse: number
   quantity: number
   collectedUsers?: (string | User)[] | null
+  currentUse?: (string | User)[] | null
   effectivePeriod: {
     validFrom: string
     validTo: string
   }
   isCollected?: boolean
+  isUsed?: boolean
 }
 
 interface CouponState {
@@ -28,7 +33,8 @@ interface CouponState {
   setUser: (user: User | null) => void
 }
 
-export const useCouponStore = create<CouponState>((set, get) => ({
+// Tạo store bằng createStore
+const couponStore = createStore<CouponState>((set, get) => ({
   validCoupons: [],
   expiredCoupons: [],
   loading: false,
@@ -49,17 +55,8 @@ export const useCouponStore = create<CouponState>((set, get) => ({
           coupon.effectivePeriod?.validTo && new Date(coupon.effectivePeriod.validTo) < new Date(),
       )
 
-      const updatedValidCoupons = validCoupons.map((coupon) => {
-        const collectedUsers =
-          coupon.collectedUsers?.map((u: string | User) => (typeof u === 'string' ? u : u.id)) || []
-        const isCollected = userId ? collectedUsers.includes(userId) : false
-        return {
-          ...coupon,
-          isCollected,
-        }
-      })
-
-      set({ validCoupons: updatedValidCoupons, expiredCoupons, loading: false })
+      // Không cần tính lại isCollected và isUsed vì đã được thêm từ getAllCoupons
+      set({ validCoupons, expiredCoupons, loading: false })
     } else {
       console.error('API Error:', response.message)
       set({ loading: false })
@@ -78,11 +75,6 @@ export const useCouponStore = create<CouponState>((set, get) => ({
         const isCollected = collectedUsers.includes(userId)
 
         if (!isCollected && coupon) {
-          if (coupon.quantity <= 0) {
-            console.warn(`Coupon ${couponId} has no remaining quantity`)
-            return state
-          }
-
           return {
             validCoupons: state.validCoupons.map((coupon) =>
               coupon.id === couponId
@@ -90,7 +82,7 @@ export const useCouponStore = create<CouponState>((set, get) => ({
                     ...coupon,
                     collectedUsers: [...(coupon.collectedUsers ?? []), userId],
                     isCollected: true,
-                    quantity: coupon.quantity - 1,
+                    // Không giảm quantity theo yêu cầu
                   }
                 : coupon,
             ),
@@ -111,3 +103,6 @@ export const useCouponStore = create<CouponState>((set, get) => ({
     set({ user })
   },
 }))
+
+// Hook để sử dụng store
+export const useCouponStore = () => useStore(couponStore)
