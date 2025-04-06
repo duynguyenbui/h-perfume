@@ -138,7 +138,7 @@ export const seed = async ({ payload }: { payload: Payload }) => {
     description: capitalize(faker.git.commitMessage()),
   }))
 
-  const   createdShippingStatuses = await createPayloadData(
+  const createdShippingStatuses = await createPayloadData(
     payload,
     'shippingStatuses',
     shippingStatuses,
@@ -332,7 +332,7 @@ export const seed = async ({ payload }: { payload: Payload }) => {
 
   for (let i = 1; i <= 10; i++) {
     const imageBuffer = await readFilePayload(
-      'D:/Projects/PayloadCMS/h-perfume/pics', // Change it depends on your local path
+      'D:/PayloadCMS/h-perfume/pics', // Change it depends on your local path
       // 'E:/project/h-perfume/pics', // Change it depends on your local path
       `${i}.jpg`,
     )

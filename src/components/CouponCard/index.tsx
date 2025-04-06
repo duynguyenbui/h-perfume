@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button'
 import { useCouponStore, type Coupon } from '@/stores/CouponStore'
 import { useAuth } from '@/providers/AuthProvider'
 import { Badge } from '@/components/ui/badge'
+import { toast } from 'sonner'
 
 interface CouponCardProps {
   coupon: Coupon & { isCollected?: boolean; isUsed?: boolean }
@@ -28,30 +29,30 @@ export default function CouponCard({ coupon, isExpired = false }: CouponCardProp
 
   const handleCollect = async () => {
     if (!user) {
-      alert('Vui lòng đăng nhập để thu thập mã!')
+      toast.error('Vui lòng đăng nhập để thu thập mã!')
       return
     }
 
     if (isUsed) {
-      alert('Mã giảm giá này đã được sử dụng!')
+      toast.error('Mã giảm giá này đã được sử dụng!')
       return
     }
 
     if (isCollected) {
-      alert('Bạn đã thu thập mã giảm giá này rồi!')
+      toast.error('Bạn đã thu thập mã giảm giá này rồi!')
       return
     }
 
     if (coupon.quantity <= 0) {
-      alert('Mã giảm giá này đã hết!')
+      toast.error('Mã giảm giá này đã hết!')
       return
     }
 
     try {
       await collectCouponAction(coupon.id, user.id)
-      alert(`Bạn đã thu thập mã: ${coupon.code}`)
+      toast.success(`Bạn đã thu thập mã: ${coupon.code}`)
     } catch (error) {
-      alert('Có lỗi xảy ra khi thu thập mã: ' + ((error as Error).message || 'Unknown error'))
+      toast.error('Có lỗi xảy ra khi thu thập mã: ' + ((error as Error).message || 'Unknown error'))
     }
   }
 
