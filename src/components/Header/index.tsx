@@ -39,7 +39,7 @@ export default function Header() {
       transition={{ duration: 0.6 }}
     >
       <nav
-        className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:p-6 lg:px-8"
+        className="mx-auto flex max-w-7xl items-center justify-between p-4 lg:p-6 lg:px-8 bg-black"
         aria-label="Global"
       >
         <div className="flex lg:flex-1">
@@ -55,7 +55,7 @@ export default function Header() {
             <Link
               key={item.name}
               href={item.href}
-              className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
+              className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors text-red-800"
             >
               {item.name}
             </Link>

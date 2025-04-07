@@ -58,7 +58,10 @@ export default function CouponsPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {classifyCoupons(validCoupons).freeCoupons.map((coupon) => (
-                    <CouponCard key={coupon.id} coupon={coupon} isCollected={coupon.isCollected} />
+                    <CouponCard
+                      key={coupon.id}
+                      coupon={{ ...coupon, isCollected: coupon.isCollected }}
+                    />
                   ))}
                 </div>
               )}
@@ -76,7 +79,10 @@ export default function CouponsPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {classifyCoupons(validCoupons).paidCoupons.map((coupon) => (
-                    <CouponCard key={coupon.id} coupon={coupon} isCollected={coupon.isCollected} />
+                    <CouponCard
+                      key={coupon.id}
+                      coupon={{ ...coupon, isCollected: coupon.isCollected }}
+                    />
                   ))}
                 </div>
               )}
