@@ -8,7 +8,7 @@ import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
 
 interface CouponCardProps {
-  coupon: Coupon & { isCollected?: boolean; isUsed?: boolean }
+  coupon: Coupon & { isUsed?: boolean }
   isExpired?: boolean
 }
 

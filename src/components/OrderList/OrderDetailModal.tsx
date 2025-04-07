@@ -1,9 +1,19 @@
 import { Dialog, DialogContent, DialogTitle, DialogClose } from '@/components/ui/dialog'
-import { X, CalendarIcon, MapPinIcon, TruckIcon, CreditCardIcon } from 'lucide-react'
+import {
+  X,
+  CalendarIcon,
+  MapPinIcon,
+  TruckIcon,
+  CreditCardIcon,
+  CheckCircle,
+  Package,
+  XCircle,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
+import { getPaymentStatusBadge } from '@/lib/statusUtils'
 
 type ScentNotes = {
   topNotes: string
@@ -87,21 +97,35 @@ type OrderDetailModalProps = {
 }
 
 export default function OrderDetailModal({ order, onClose }: OrderDetailModalProps) {
-  // Function to get appropriate badge styling based on shipping status
-  const getStatusBadge = (status: { name: string }) => {
-    if (!status) return 'bg-gray-100 text-gray-800'
+  // Function to get badge styling for shipping status
+  const getShippingStatusBadge = (status: { name: string }) => {
+    if (!status) return { className: 'bg-gray-100 text-gray-800', icon: null }
 
     const statusName = status.name.toLowerCase()
     if (statusName.includes('đã giao') || statusName.includes('completed')) {
-      return 'bg-green-100 text-green-800'
+      return {
+        className: 'bg-green-100 text-green-800',
+        icon: <CheckCircle className="h-4 w-4 mr-1" />,
+      }
     } else if (statusName.includes('vận chuyển') || statusName.includes('shipping')) {
-      return 'bg-amber-100 text-amber-800'
+      return {
+        className: 'bg-amber-100 text-amber-800',
+        icon: <TruckIcon className="h-4 w-4 mr-1" />,
+      }
     } else if (statusName.includes('chờ xác nhận') || statusName.includes('pending')) {
-      return 'bg-blue-100 text-blue-800'
+      return {
+        className: 'bg-blue-100 text-blue-800',
+        icon: <Package className="h-4 w-4 mr-1" />,
+      }
     } else if (statusName.includes('đã hủy') || statusName.includes('cancelled')) {
-      return 'bg-red-100 text-red-800'
-    } else {
-      return 'bg-gray-100 text-gray-800'
+      return {
+        className: 'bg-red-100 text-red-800',
+        icon: <XCircle className="h-4 w-4 mr-1" />,
+      }
+    }
+    return {
+      className: 'bg-gray-100 text-gray-800',
+      icon: null,
     }
   }
 
@@ -166,17 +190,18 @@ export default function OrderDetailModal({ order, onClose }: OrderDetailModalPro
             {/* Order status section */}
             <div className="bg-gray-50 p-4 rounded-lg">
               <div className="flex flex-wrap gap-4 justify-between">
-                <div className="flex items-center space-x-2">
+                {/* <div className="flex items-center space-x-2">
                   <TruckIcon className="h-5 w-5 text-gray-400" />
                   <div>
                     <h4 className="font-medium text-gray-700 text-sm">Trạng thái vận chuyển</h4>
                     <span
-                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide ${getStatusBadge(order.shippingStatus)}`}
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide ${getShippingStatusBadge(order.shippingStatus).className}`}
                     >
+                      {getShippingStatusBadge(order.shippingStatus).icon}
                       {order.shippingStatus.name}
                     </span>
                   </div>
-                </div>
+                </div> */}
 
                 <div className="flex items-center space-x-2">
                   <CreditCardIcon className="h-5 w-5 text-gray-400" />
@@ -190,7 +215,12 @@ export default function OrderDetailModal({ order, onClose }: OrderDetailModalPro
                   <CalendarIcon className="h-5 w-5 text-gray-400" />
                   <div>
                     <h4 className="font-medium text-gray-700 text-sm">Trạng thái thanh toán</h4>
-                    <span className="text-sm">{order.paymentStatus.name}</span>
+                    <span
+                      className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium uppercase tracking-wide ${getPaymentStatusBadge(order.paymentStatus).className}`}
+                    >
+                      {getPaymentStatusBadge(order.paymentStatus).icon}
+                      {getPaymentStatusBadge(order.paymentStatus).displayName}
+                    </span>
                   </div>
                 </div>
               </div>

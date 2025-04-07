@@ -4,7 +4,6 @@ import { useEffect } from 'react'
 import { useCouponStore } from '@/stores/CouponStore'
 import CouponCard from '@/components/CouponCard'
 import { Loader2 } from 'lucide-react'
-
 import { useAuth } from '@/providers/AuthProvider'
 
 export default function CouponsPage() {
@@ -58,10 +57,7 @@ export default function CouponsPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {classifyCoupons(validCoupons).freeCoupons.map((coupon) => (
-                    <CouponCard
-                      key={coupon.id}
-                      coupon={{ ...coupon, isCollected: coupon.isCollected }}
-                    />
+                    <CouponCard key={coupon.id} coupon={coupon} />
                   ))}
                 </div>
               )}
@@ -79,15 +75,26 @@ export default function CouponsPage() {
               ) : (
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                   {classifyCoupons(validCoupons).paidCoupons.map((coupon) => (
-                    <CouponCard
-                      key={coupon.id}
-                      coupon={{ ...coupon, isCollected: coupon.isCollected }}
-                    />
+                    <CouponCard key={coupon.id} coupon={coupon} />
                   ))}
                 </div>
               )}
             </div>
           </section>
+
+          {/* Mã giảm giá đã hết hạn (nếu cần hiển thị) */}
+          {expiredCoupons.length > 0 && (
+            <section className="bg-gradient-to-r from-red-50 to-rose-50 p-6 rounded-xl shadow-lg">
+              <h2 className="text-2xl font-bold mb-6 text-red-700 flex items-center justify-center">
+                ⛔ Mã Đã Hết Hạn
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {expiredCoupons.map((coupon) => (
+                  <CouponCard key={coupon.id} coupon={coupon} isExpired />
+                ))}
+              </div>
+            </section>
+          )}
         </div>
       )}
     </div>

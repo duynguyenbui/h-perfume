@@ -55,7 +55,7 @@ export default function Header() {
             <Link
               key={item.name}
               href={item.href}
-              className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors text-red-800"
+              className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors text-white"
             >
               {item.name}
             </Link>
@@ -86,13 +86,13 @@ export default function Header() {
               <>
                 <Link
                   href="/login"
-                  className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
+                  className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors text-white"
                 >
                   Đăng nhập
                 </Link>
                 <Link
                   href="/register"
-                  className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
+                  className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors text-white"
                 >
                   Đăng ký
                 </Link>
