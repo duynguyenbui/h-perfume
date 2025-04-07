@@ -1,49 +1,61 @@
 import { NextResponse } from 'next/server'
 import crypto from 'crypto'
 import { MomoPaymentRequest, MomoPaymentResponse } from '@/types/momo'
+import { createOrder } from '@/actions/orders'
+import { TPayloadCheckoutValidator } from '@/validations'
 
 export async function POST(request: Request): Promise<NextResponse> {
   try {
-    // Phân tích dữ liệu từ request body
     const body = await request.json()
-    const { amount } = body
+    const { amount, checkoutData } = body
 
-    // Kiểm tra amount
     if (!amount || typeof amount !== 'number' || amount <= 0) {
       return NextResponse.json({ success: false, message: 'Số tiền không hợp lệ' }, { status: 400 })
     }
 
-    const orderId = `ORDER-${Date.now()}`
-    const requestId = orderId
+    if (!checkoutData) {
+      return NextResponse.json(
+        { success: false, message: 'Dữ liệu đơn hàng không hợp lệ' },
+        { status: 400 },
+      )
+    }
 
-    // Cấu hình Momo
+    // Tạo đơn hàng trong Payload CMS
+    const orderResult = await createOrder(checkoutData as TPayloadCheckoutValidator)
+    if (!orderResult.success || !orderResult.data) {
+      return NextResponse.json({ success: false, message: orderResult.message }, { status: 400 })
+    }
+
+    const order = orderResult.data
+    const orderId = order.id // Sử dụng _id từ Payload CMS
+
     const accessKey: string = process.env.MOMO_ACCESS_KEY || 'F8BBA842ECF85'
     const secretKey: string = process.env.MOMO_SECRET_KEY || 'K951B6PE1waDMi640xX08PD3vg6EkVlz'
     const partnerCode: string = process.env.MOMO_PARTNER_CODE || 'MOMO1'
     const orderInfo: string = `Thanh toán đơn hàng ${orderId}`
-    const redirectUrl: string = `${process.env.NEXT_PUBLIC_BASE_URL}/orders` // URL để redirect sau khi thanh toán
-    const ipnUrl: string = `${process.env.NEXT_PUBLIC_BASE_URL}/api/endpoints/momo/callback` // URL để Momo gửi callback
+    const redirectUrl: string = `${process.env.NEXT_PUBLIC_PERMANENT_URL}/orders`
+    const ipnUrl: string = `${process.env.NEXT_PUBLIC_BASE_URL}/momo/callback`
     const requestType: string = 'payWithMethod'
     const extraData: string = ''
     const orderGroupId: string = ''
     const autoCapture: boolean = true
     const lang: string = 'vi'
 
-    // Tạo chữ ký (signature)
+    const requestId = `${orderId}-${Date.now()}`
+
     const rawSignature: string = `accessKey=${accessKey}&amount=${amount}&extraData=${extraData}&ipnUrl=${ipnUrl}&orderId=${orderId}&orderInfo=${orderInfo}&partnerCode=${partnerCode}&redirectUrl=${redirectUrl}&requestId=${requestId}&requestType=${requestType}`
     const signature: string = crypto
       .createHmac('sha256', secretKey)
       .update(rawSignature)
       .digest('hex')
 
-    // Dữ liệu yêu cầu gửi đến Momo API
     const requestBody: MomoPaymentRequest = {
       partnerCode,
       partnerName: 'Đom Đóm',
       storeId: 'domdomMMMMMM',
       requestId,
       amount: amount.toString(),
-      orderId,
+      orderId, // Dùng _id
       orderInfo,
       redirectUrl,
       ipnUrl,
@@ -55,7 +67,6 @@ export async function POST(request: Request): Promise<NextResponse> {
       signature,
     }
 
-    // Gọi API Momo
     const response = await fetch('https://test-payment.momo.vn/v2/gateway/api/create', {
       method: 'POST',
       headers: {

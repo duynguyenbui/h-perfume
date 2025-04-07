@@ -16,7 +16,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { Loader2, Package, Search, ShoppingBag, Filter, Calendar, Clock } from 'lucide-react'
+import { Loader2, Package, Search, ShoppingBag, Filter as FilterIcon } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export default function OrdersPage() {
@@ -24,8 +24,9 @@ export default function OrdersPage() {
   const [orders, setOrders] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState('')
-  const [sortBy, setSortBy] = useState('newest')
-  const [filterStatus, setFilterStatus] = useState('all')
+  const [filters, setFilters] = useState({
+    status: 'all',
+  })
 
   useEffect(() => {
     async function fetchOrders() {
@@ -43,40 +44,31 @@ export default function OrdersPage() {
     fetchOrders()
   }, [router])
 
+  // Lọc đơn hàng
   const filteredOrders = orders
     .filter((order) => {
-      if (filterStatus !== 'all' && order.status !== filterStatus) {
-        return false
-      }
-
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase()
-        return (
-          order.id.toLowerCase().includes(searchLower) ||
-          order.items.some((item: any) => item.name.toLowerCase().includes(searchLower))
-        )
+        return order.id.toLowerCase().includes(searchLower)
+      }
+
+      if (filters.status !== 'all') {
+        return order.shippingStatus?.value === filters.status // Giả sử shippingStatus có field 'value'
       }
 
       return true
     })
-    .sort((a, b) => {
-      if (sortBy === 'newest') {
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-      } else if (sortBy === 'oldest') {
-        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
-      } else if (sortBy === 'price-high') {
-        return b.totalAmount - a.totalAmount
-      } else if (sortBy === 'price-low') {
-        return a.totalAmount - b.totalAmount
-      }
-      return 0
-    })
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) // Sắp xếp theo mới nhất
 
-  const pendingOrders = orders.filter((order) => order.status === 'pending')
-  const processingOrders = orders.filter((order) => order.status === 'processing')
-  const shippedOrders = orders.filter((order) => order.status === 'shipped')
-  const deliveredOrders = orders.filter((order) => order.status === 'delivered')
-  const cancelledOrders = orders.filter((order) => order.status === 'cancelled')
+  // Nhóm các trạng thái vận chuyển
+  const statusGroups = {
+    processing: orders.filter((order) =>
+      ['pending', 'processing'].includes(order.shippingStatus?.value),
+    ),
+    shipped: orders.filter((order) => order.shippingStatus?.value === 'shipped'),
+    delivered: orders.filter((order) => order.shippingStatus?.value === 'delivered'),
+    cancelled: orders.filter((order) => order.shippingStatus?.value === 'cancelled'),
+  }
 
   const container = {
     hidden: { opacity: 0 },
@@ -123,11 +115,6 @@ export default function OrdersPage() {
                 count={orders.length}
                 label="Tổng đơn hàng"
               />
-              <OrderStatCard
-                icon={<Clock className="h-6 w-6 text-white" />}
-                count={pendingOrders.length + processingOrders.length}
-                label="Đang xử lý"
-              />
             </div>
           </div>
         </div>
@@ -138,98 +125,35 @@ export default function OrdersPage() {
           <EmptyOrdersState />
         ) : (
           <>
-            {/* Search and Filter */}
+            {/* Filter and Search Section */}
             <Card className="mb-6">
               <CardContent className="p-4">
                 <div className="flex flex-col md:flex-row gap-4">
                   <div className="relative flex-1">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
-                      placeholder="Tìm kiếm đơn hàng..."
+                      placeholder="Tìm kiếm theo ID đơn hàng..."
                       className="pl-9"
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
                     />
                   </div>
-                  <div className="flex gap-2">
-                    <div className="w-40">
-                      <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger>
-                          <div className="flex items-center gap-2">
-                            <Filter className="h-4 w-4" />
-                            <span>Sắp xếp</span>
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="newest">Mới nhất</SelectItem>
-                          <SelectItem value="oldest">Cũ nhất</SelectItem>
-                          <SelectItem value="price-high">Giá cao → thấp</SelectItem>
-                          <SelectItem value="price-low">Giá thấp → cao</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="w-40">
-                      <Select value={filterStatus} onValueChange={setFilterStatus}>
-                        <SelectTrigger>
-                          <div className="flex items-center gap-2">
-                            <Filter className="h-4 w-4" />
-                            <span>Trạng thái</span>
-                          </div>
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="all">Tất cả</SelectItem>
-                          <SelectItem value="pending">Chờ xác nhận</SelectItem>
-                          <SelectItem value="processing">Đang xử lý</SelectItem>
-                          <SelectItem value="shipped">Đang giao</SelectItem>
-                          <SelectItem value="delivered">Đã giao</SelectItem>
-                          <SelectItem value="cancelled">Đã hủy</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
+
+                  {/* Inline Filter Component */}
+                  <FilterComponent
+                    currentStatus={filters.status}
+                    onStatusChange={(newStatus) => setFilters({ ...filters, status: newStatus })}
+                  />
                 </div>
               </CardContent>
             </Card>
 
             {/* Order Tabs */}
             <Tabs defaultValue="all" className="w-full">
-              <TabsList className="grid grid-cols-3 md:grid-cols-6 mb-6">
+              <TabsList className="grid grid-cols-2 md:grid-cols-5 mb-6">
                 <TabsTrigger value="all" className="flex items-center gap-1">
                   <ShoppingBag className="h-4 w-4" />
                   <span>Tất cả</span>
-                  <Badge variant="secondary" className="ml-1">
-                    {orders.length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="pending" className="flex items-center gap-1">
-                  <span>Chờ xác nhận</span>
-                  <Badge variant="secondary" className="ml-1">
-                    {pendingOrders.length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="processing" className="flex items-center gap-1">
-                  <span>Đang xử lý</span>
-                  <Badge variant="secondary" className="ml-1">
-                    {processingOrders.length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="shipped" className="flex items-center gap-1">
-                  <span>Đang giao</span>
-                  <Badge variant="secondary" className="ml-1">
-                    {shippedOrders.length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="delivered" className="flex items-center gap-1">
-                  <span>Đã giao</span>
-                  <Badge variant="secondary" className="ml-1">
-                    {deliveredOrders.length}
-                  </Badge>
-                </TabsTrigger>
-                <TabsTrigger value="cancelled" className="flex items-center gap-1">
-                  <span>Đã hủy</span>
-                  <Badge variant="secondary" className="ml-1">
-                    {cancelledOrders.length}
-                  </Badge>
                 </TabsTrigger>
               </TabsList>
 
@@ -243,17 +167,9 @@ export default function OrdersPage() {
                 )}
               </TabsContent>
 
-              <TabsContent value="pending">
-                <OrderList
-                  orders={pendingOrders.filter((order) =>
-                    searchTerm ? order.id.toLowerCase().includes(searchTerm.toLowerCase()) : true,
-                  )}
-                />
-              </TabsContent>
-
               <TabsContent value="processing">
                 <OrderList
-                  orders={processingOrders.filter((order) =>
+                  orders={statusGroups.processing.filter((order) =>
                     searchTerm ? order.id.toLowerCase().includes(searchTerm.toLowerCase()) : true,
                   )}
                 />
@@ -261,7 +177,7 @@ export default function OrdersPage() {
 
               <TabsContent value="shipped">
                 <OrderList
-                  orders={shippedOrders.filter((order) =>
+                  orders={statusGroups.shipped.filter((order) =>
                     searchTerm ? order.id.toLowerCase().includes(searchTerm.toLowerCase()) : true,
                   )}
                 />
@@ -269,7 +185,7 @@ export default function OrdersPage() {
 
               <TabsContent value="delivered">
                 <OrderList
-                  orders={deliveredOrders.filter((order) =>
+                  orders={statusGroups.delivered.filter((order) =>
                     searchTerm ? order.id.toLowerCase().includes(searchTerm.toLowerCase()) : true,
                   )}
                 />
@@ -277,7 +193,7 @@ export default function OrdersPage() {
 
               <TabsContent value="cancelled">
                 <OrderList
-                  orders={cancelledOrders.filter((order) =>
+                  orders={statusGroups.cancelled.filter((order) =>
                     searchTerm ? order.id.toLowerCase().includes(searchTerm.toLowerCase()) : true,
                   )}
                 />
@@ -286,6 +202,35 @@ export default function OrdersPage() {
           </>
         )}
       </div>
+    </div>
+  )
+}
+
+// Component Filter đơn giản
+function FilterComponent({
+  currentStatus,
+  onStatusChange,
+}: {
+  currentStatus: string
+  onStatusChange: (status: string) => void
+}) {
+  return (
+    <div className="w-40">
+      <Select value={currentStatus} onValueChange={onStatusChange}>
+        <SelectTrigger>
+          <div className="flex items-center gap-2">
+            <FilterIcon className="h-4 w-4" />
+            <span>Trạng thái</span>
+          </div>
+        </SelectTrigger>
+        <SelectContent>
+          <SelectItem value="all">Tất cả</SelectItem>
+          <SelectItem value="processing">Chờ xử lý</SelectItem>
+          <SelectItem value="shipped">Đang giao</SelectItem>
+          <SelectItem value="delivered">Đã giao</SelectItem>
+          <SelectItem value="cancelled">Đã hủy</SelectItem>
+        </SelectContent>
+      </Select>
     </div>
   )
 }

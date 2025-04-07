@@ -138,14 +138,14 @@ export default function CheckoutDetail() {
           checkoutData: orderData,
         }
 
-        const response = await fetch('/api/endpoints/momo', {
+        const response = await fetch('/momo', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
         })
 
         const result: MomoPaymentResponse = await response.json()
-        console.log('Kết quả từ api/endpoints/momo:', result)
+        console.log('Kết quả từ /momo:', result)
 
         if (result.success && result.payUrl) {
           console.log('Chuyển hướng đến trang thanh toán Momo:', result.payUrl)
