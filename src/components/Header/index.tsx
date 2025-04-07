@@ -3,12 +3,9 @@
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 import { useAuth } from '@/providers/AuthProvider'
-import { UserIcon, LogOutIcon, Menu, Frame } from 'lucide-react'
+import { UserIcon, LogOutIcon, Frame } from 'lucide-react'
 import { ModeToggle } from '@/components/ModeToggle'
 import CartSheet from '@/components/CartSheet'
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet'
-import { Button } from '@/components/ui/button'
-import { useState } from 'react'
 
 const navigation = [
   { name: 'Trang Chủ', href: '/' },
@@ -23,6 +20,7 @@ const navigation = [
 
 export default function Header() {
   const { user } = useAuth()
+
   return (
     <motion.header
       className="sticky top-0 z-50 bg-background/80 backdrop-blur-md"
@@ -46,7 +44,11 @@ export default function Header() {
         </div>
         <div className="flex gap-x-12">
           {navigation
-            .filter((item) => !item.isLoggedIn || (item.isLoggedIn && user))
+            .filter((item) => {
+              if (item.isLoggedIn && !user) return false // Không đăng nhập thì không hiện các mục yêu cầu đăng nhập
+              if (item.isAdmin && (!user || !user.roles?.includes('admin'))) return false // Không phải admin thì không hiện "Quản lý"
+              return true
+            })
             .map((item) => (
               <Link
                 key={item.name}
