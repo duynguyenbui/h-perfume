@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -8,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { PayloadUserLoginValidator, TPayloadUserLoginValidator } from '@/validations'
 import { useAuth } from '@/providers/AuthProvider'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { Eye, EyeOff } from 'lucide-react'
 import { useCallback, useRef } from 'react'
 import { toast } from 'sonner'
 import {
@@ -25,6 +27,7 @@ export function LoginForm({ className }: { className?: string }) {
   const router = useRouter()
   const redirect = useRef(searchParams?.get('redirect'))
 
+  const [showPassword, setShowPassword] = useState(false)
   const form = useForm<TPayloadUserLoginValidator>({
     resolver: zodResolver(PayloadUserLoginValidator),
     defaultValues: {
@@ -86,14 +89,24 @@ export function LoginForm({ className }: { className?: string }) {
                         Quên mật khẩu?
                       </a>
                     </div>
-                    <FormControl>
-                      <Input
-                        placeholder="Nhập mật khẩu của bạn"
-                        type="password"
-                        {...field}
-                        required
-                        className="rounded-md"
-                      />
+                    <FormControl className="relative">
+                      <div className="relative">
+                        {' '}
+                        <Input
+                          placeholder="Nhập mật khẩu của bạn"
+                          type={showPassword ? 'text' : 'password'}
+                          {...field}
+                          required
+                          className="rounded-md pr-10"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => setShowPassword(!showPassword)}
+                          className="absolute inset-y-0 right-3 flex items-center text-gray-500 hover:text-gray-700"
+                        >
+                          {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                        </button>
+                      </div>
                     </FormControl>
 
                     <FormMessage />

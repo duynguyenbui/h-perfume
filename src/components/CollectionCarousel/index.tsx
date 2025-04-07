@@ -34,7 +34,12 @@ export function CollectionCarousel() {
       <CarouselContent>
         {collections.map((item) => (
           <CarouselItem className="md:basis-1/3 p-4" key={item.id}>
-            <CollectionCard Icon={Heart} title={item.name} description={item.description} id={item.id} />
+            <CollectionCard
+              Icon={Heart}
+              title={item.name}
+              description={item.description}
+              id={item.id}
+            />
           </CarouselItem>
         ))}
       </CarouselContent>
