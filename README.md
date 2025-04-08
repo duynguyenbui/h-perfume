@@ -38,7 +38,7 @@ Dự án thương mại điện tử nước hoa được xây dựng với ki�
 
 ```bash
 # Clone dự án
-git clone https://github.com/your-username/h-perfume.git
+git clone https://github.com/duynguyenbui/h-perfume.git
 cd h-perfume
 
 # Cài đặt các dependencies
