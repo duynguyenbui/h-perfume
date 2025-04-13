@@ -35,11 +35,7 @@ export default function Header() {
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">H-Perfume</span>
-            <img
-              className="h-8 w-auto"
-              src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/creative-SW6QDQbcVuwPgb6a2CYtYmRbsJa4k1.png"
-              alt="H-Perfume Logo"
-            />
+            <img className="h-20 w-auto" src="/media/1.jpg" alt="H-Perfume Logo" />
           </Link>
         </div>
         <div className="flex gap-x-12">
