@@ -7,7 +7,7 @@ import { updatePaymentStatus } from '@/actions/orders'
 const PAYMENT_STATUS_IDS = {
   PENDING: '67d83c2d5474115f08276b48', // "Pending"
   PAID: '67d83c2d5474115f08276b49', // "Paid"
-  FAILED: '67d83c2d5474115f08276b4a', // "Failed" (giả định, thay bằng _id thực tế nếu có)
+  FAILED: '67d83c2d5474115f08276b4a', // "Failed"
 }
 
 export async function POST(request: Request): Promise<NextResponse> {

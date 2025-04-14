@@ -29,8 +29,15 @@ import { useForm } from 'react-hook-form'
 import { createOrder } from '@/actions/orders'
 import { useRouter } from 'next/navigation'
 import CouponSection from './CouponSection'
-// PaymentStrategies
 import { PaymentContext, CodPaymentStrategy, MomoPaymentStrategy } from '@/lib/PaymentStrategies'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from '@/components/ui/dialog'
+
 interface MomoPaymentResponse {
   success: boolean
   payUrl?: string
@@ -41,13 +48,14 @@ export default function CheckoutDetail() {
   const { user } = useAuth()
   const { lineItems, clearCart } = useCart()
   const router = useRouter()
-  // PaymentStrategies
   const [paymentContext, setPaymentContext] = useState<PaymentContext | null>(null)
   const [shippingAddresses, setShippingAddresses] = useState<ShippingAddress[]>([])
   const [shippingFee, setShippingFee] = useState<ShippingFee | null>(null)
   const [totalPrice, setTotalPrice] = useState<number>(0)
   const [discountAmount, setDiscountAmount] = useState<number>(0)
   const [selectedCoupons, setSelectedCoupons] = useState<PayloadCoupon[]>([])
+  const [isConfirmDialogOpen, setIsConfirmDialogOpen] = useState(false)
+  const [formData, setFormData] = useState<TPayloadCheckoutValidator | null>(null)
 
   const totalBeforeCoupon = totalPrice + (shippingFee?.fee || 0)
   const totalAfterCoupon = Math.max(totalBeforeCoupon - discountAmount, 0)
@@ -73,7 +81,7 @@ export default function CheckoutDetail() {
     setDiscountAmount(amount)
     setSelectedCoupons(coupons)
   }
-  // useEffect shippingAddress
+
   useEffect(() => {
     if (user) {
       getShippingAddresses().then((res) => {
@@ -115,13 +123,7 @@ export default function CheckoutDetail() {
     form.trigger()
   }, [lineItems, form])
 
-  const onSubmit = async (data: TPayloadCheckoutValidator) => {
-    const { success, error } = PayloadCheckoutValidator.safeParse(data)
-    if (!success) {
-      toast.error('Vui lòng kiểm tra lại thông tin đơn hàng')
-      return
-    }
-
+  const handleConfirmPayment = async (data: TPayloadCheckoutValidator) => {
     const orderData = {
       lineItems: data.lineItems,
       paymentMethod: data.paymentMethod,
@@ -160,18 +162,30 @@ export default function CheckoutDetail() {
         console.log('Kết quả createOrder:', res)
         if (res.success) {
           console.log('Tạo đơn hàng COD thành công')
-          toast.success('Đơn hàng đã được tạo thành công!')
           clearCart()
-          router.push('/orders')
+          router.push(`/checkout/success?total=${totalAfterCoupon}&method=${data.paymentMethod}`)
         } else {
           console.log('Thất bại khi tạo đơn hàng COD:', res.message)
           toast.error(res.message)
         }
       }
     } catch (error) {
-      console.error('Lỗi trong onSubmit:', error)
+      console.error('Lỗi trong handleConfirmPayment:', error)
       toast.error('Có lỗi xảy ra khi xử lý thanh toán. Vui lòng thử lại.')
+    } finally {
+      setIsConfirmDialogOpen(false)
     }
+  }
+
+  const onSubmit = async (data: TPayloadCheckoutValidator) => {
+    const { success, error } = PayloadCheckoutValidator.safeParse(data)
+    if (!success) {
+      toast.error('Vui lòng kiểm tra lại thông tin đơn hàng')
+      return
+    }
+
+    setFormData(data)
+    setIsConfirmDialogOpen(true)
   }
 
   if (!lineItems.length) {
@@ -190,7 +204,6 @@ export default function CheckoutDetail() {
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           <div className="flex flex-col lg:flex-row gap-8">
-            {/* Left Column - Cart and Shipping Details */}
             <div className="lg:w-2/3 space-y-6">
               <Card className="shadow-md">
                 <CardHeader className="border-b pb-2">
@@ -318,7 +331,6 @@ export default function CheckoutDetail() {
               </Card>
             </div>
 
-            {/* Right Column - Order Summary */}
             <div className="lg:w-1/3 space-y-6">
               <Card className="shadow-md sticky top-4">
                 <CardHeader className="border-b pb-2">
@@ -393,6 +405,87 @@ export default function CheckoutDetail() {
           </div>
         </form>
       </Form>
+
+      <Dialog open={isConfirmDialogOpen} onOpenChange={setIsConfirmDialogOpen}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>Xác nhận thanh toán</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p>Bạn có chắc chắn muốn thanh toán đơn hàng này?</p>
+            <div className="space-y-2">
+              <h3 className="font-semibold">Tóm tắt đơn hàng</h3>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Sản phẩm</TableHead>
+                    <TableHead className="text-center">Số lượng</TableHead>
+                    <TableHead className="text-right">Tổng</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {lineItems.map((item) => (
+                    <TableRow key={item.id}>
+                      <TableCell>{item.name}</TableCell>
+                      <TableCell className="text-center">{item.quantity}</TableCell>
+                      <TableCell className="text-right">
+                        {formatPrice(
+                          (item.price - (item.price * item.discount) / 100) * item.quantity,
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <span>Tạm tính</span>
+                  <span>{formatPrice(totalPrice)}</span>
+                </div>
+                {selectedCoupons.length > 0 && (
+                  <div className="space-y-1">
+                    <span>Giảm giá:</span>
+                    {selectedCoupons.map((coupon) => (
+                      <div key={coupon.id} className="flex justify-between text-sm">
+                        <span>{coupon.code}</span>
+                        <span>
+                          {coupon.discountType === 'percentage'
+                            ? `-${coupon.discountAmount}%`
+                            : `-${formatPrice(coupon.discountAmount)}`}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                <div className="flex justify-between">
+                  <span>Phí vận chuyển</span>
+                  <span>{formatPrice(shippingFee?.fee || 0)}</span>
+                </div>
+                <Separator />
+                <div className="flex justify-between font-bold">
+                  <span>Tổng cộng</span>
+                  <span>{formatPrice(totalAfterCoupon)}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsConfirmDialogOpen(false)}>
+              Hủy
+            </Button>
+            <Button
+              onClick={() => {
+                if (formData) {
+                  handleConfirmPayment(formData)
+                }
+              }}
+              disabled={form.formState.isSubmitting}
+            >
+              Xác nhận
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
