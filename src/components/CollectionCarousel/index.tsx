@@ -11,7 +11,7 @@ import { CollectionCard } from '../CollectionCard'
 import { Heart } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { getValidCollections } from '@/actions/collections'
-import { Collection } from '@/payload-types'
+import { Collection, Media } from '@/payload-types'
 import { toast } from 'sonner'
 
 export function CollectionCarousel() {
@@ -39,6 +39,7 @@ export function CollectionCarousel() {
               title={item.name}
               description={item.description}
               id={item.id}
+              imageUrl={(item?.image as Media)?.url || ''}
             />
           </CarouselItem>
         ))}

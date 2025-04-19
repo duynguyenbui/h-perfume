@@ -18,7 +18,7 @@ export const getValidCollections = async () => {
       },
     },
     pagination: false,
-    depth: 0,
+    depth: 1,
   })
 
   const results = totalDocs > 0 ? collections : []
