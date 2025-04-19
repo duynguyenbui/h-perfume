@@ -38,11 +38,11 @@ export default function Header() {
             <img className="h-20 w-auto" src="/media/1.jpg" alt="H-Perfume Logo" />
           </Link>
         </div>
-        <div className="flex gap-x-12">
+        <div className="flex gap-x-8">
           {navigation
             .filter((item) => {
-              if (item.isLoggedIn && !user) return false // Không đăng nhập thì không hiện các mục yêu cầu đăng nhập
-              if (item.isAdmin && (!user || !user.roles?.includes('admin'))) return false // Không phải admin thì không hiện "Quản lý"
+              if (item.isLoggedIn && !user) return false
+              if (item.isAdmin && (!user || !user.roles?.includes('admin'))) return false
               return true
             })
             .map((item) => (
@@ -55,7 +55,7 @@ export default function Header() {
               </Link>
             ))}
         </div>
-        <div className="flex flex-1 justify-end items-center gap-4">
+        <div className="flex flex-1 justify-end items-center gap-1">
           {user ? (
             <>
               <Link

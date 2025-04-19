@@ -330,3 +330,30 @@ export async function updatePaymentStatus(orderId: string, paymentStatusId: stri
     }
   }
 }
+
+export async function getPaymentStatus(
+  statusName: 'Pending' | 'Paid' | 'Failed',
+): Promise<{ _id: string; name: string }> {
+  try {
+    const payload = await getPayloadClient()
+
+    const result = await payload.find({
+      collection: 'paymentStatuses',
+      where: { name: { equals: statusName } },
+    })
+
+    const status = result.docs[0]
+
+    if (!status) {
+      throw new Error(`Không tìm thấy trạng thái thanh toán: ${statusName}`)
+    }
+
+    return {
+      _id: status.id,
+      name: status.name,
+    }
+  } catch (error) {
+    console.error(`Lỗi khi lấy trạng thái thanh toán ${statusName}:`, error)
+    throw error
+  }
+}

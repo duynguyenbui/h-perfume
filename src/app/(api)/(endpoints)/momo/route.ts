@@ -27,13 +27,13 @@ export async function POST(request: Request): Promise<NextResponse> {
     }
 
     const order = orderResult.data
-    const orderId = order.id // Sử dụng _id từ Payload CMS
+    const orderId = order.id
 
     const accessKey: string = process.env.MOMO_ACCESS_KEY || 'F8BBA842ECF85'
     const secretKey: string = process.env.MOMO_SECRET_KEY || 'K951B6PE1waDMi640xX08PD3vg6EkVlz'
     const partnerCode: string = process.env.MOMO_PARTNER_CODE || 'MOMO1'
     const orderInfo: string = `Thanh toán đơn hàng ${orderId}`
-    const redirectUrl: string = `${process.env.NEXT_PUBLIC_PERMANENT_URL}/orders`
+    const redirectUrl: string = `${process.env.NEXT_PUBLIC_PERMANENT_URL}/checkout/success?orderId=${orderId}`
     const ipnUrl: string = `${process.env.NEXT_PUBLIC_BASE_URL}/momo/callback`
     const requestType: string = 'payWithMethod'
     const extraData: string = ''
@@ -55,7 +55,7 @@ export async function POST(request: Request): Promise<NextResponse> {
       storeId: 'domdomMMMMMM',
       requestId,
       amount: amount.toString(),
-      orderId, // Dùng _id
+      orderId,
       orderInfo,
       redirectUrl,
       ipnUrl,
