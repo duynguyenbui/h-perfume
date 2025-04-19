@@ -5,11 +5,18 @@ Dự án thương mại điện tử nước hoa được xây dựng với ki�
 ## ✨ Tính năng chính
 
 - Quản lý sản phẩm, danh mục, đơn hàng, người dùng qua Payload CMS
-- Tìm kiếm sản phẩm nhanh chóng 
+- Tìm kiếm sản phẩm nhanh chóng
 - Xử lý dữ liệu, logic phía server bằng payload cms
 - Frontend React hiện đại với Next.js 15, TailwindCSS 4
 - Chat realtime qua Socket.io
 
+- **Database**: mongodb
+
+```bash
+docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=mongo -e MONGO_INITDB_ROOT_PASSWORD=mongopw mongo
+```
+
+- **ConnectionString**: mongodb://mongo:mongopw@localhost:27017/multitenant-ecommerce?authSource=admin
 
 ---
 
@@ -28,6 +35,7 @@ Dự án thương mại điện tử nước hoa được xây dựng với ki�
 ## 📦 Cài đặt
 
 > Đảm bảo bạn đã cài:
+>
 > - `Node.js >=20.9.0` hoặc `18.20.2`
 > - `pnpm >=10`
 
@@ -38,3 +46,4 @@ cd h-perfume
 
 # Cài đặt các dependencies
 pnpm install
+```

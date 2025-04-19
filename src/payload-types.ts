@@ -301,6 +301,7 @@ export interface Collection {
   id: string;
   name: string;
   description: string;
+  image?: (string | null) | Media;
   period?: {
     from?: string | null;
     to?: string | null;
@@ -706,6 +707,7 @@ export interface FragrancesSelect<T extends boolean = true> {
 export interface CollectionsSelect<T extends boolean = true> {
   name?: T;
   description?: T;
+  image?: T;
   period?:
     | T
     | {

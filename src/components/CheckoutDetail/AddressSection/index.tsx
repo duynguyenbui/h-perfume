@@ -36,7 +36,7 @@ export default function AddressModal({ onSelectAddress, selectedAddressId }: Add
         if (res.success && res.data) {
           setAddresses(res.data)
         } else {
-          toast.error(res.message)
+          toast.error('Không thể tải địa chỉ giao hàng')
         }
       })
     }

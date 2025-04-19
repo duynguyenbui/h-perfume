@@ -33,6 +33,17 @@ export const Collections: CollectionConfig = {
       },
     },
     {
+      name: 'image',
+      type: 'upload',
+      relationTo: 'media',
+      label: {
+        vi: 'Hình ảnh',
+      },
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'period',
       label: {
         vi: 'Thời gian diễn ra',

@@ -47,7 +47,7 @@ export default function Hero() {
         >
           <div className="relative">
             <img
-              src="/media/1.jpg"
+              src="logo.png"
               alt="Bộ Sưu Tập Nước Hoa Cao Cấp H-Perfume"
               width={600}
               height={600}

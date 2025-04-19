@@ -16,6 +16,7 @@ const navigation = [
   { name: 'Đơn hàng', href: '/orders', isLoggedIn: true },
   { name: 'Hỗ trợ', href: '/conversations', isLoggedIn: true },
   { name: 'Quản lý', href: '/admin', isLoggedIn: true, isAdmin: true },
+  { name: 'Thống kê', href: '/statistics', isLoggedIn: true, isAdmin: true },
 ]
 
 export default function Header() {
@@ -35,10 +36,10 @@ export default function Header() {
         <div className="flex lg:flex-1">
           <Link href="/" className="-m-1.5 p-1.5">
             <span className="sr-only">H-Perfume</span>
-            <img className="h-20 w-auto" src="/media/1.jpg" alt="H-Perfume Logo" />
+            <img className="h-20 w-auto" src="/logo.png" alt="H-Perfume Logo" />
           </Link>
         </div>
-        <div className="flex gap-x-12">
+        <div className="flex gap-4">
           {navigation
             .filter((item) => {
               if (item.isLoggedIn && !user) return false // Không đăng nhập thì không hiện các mục yêu cầu đăng nhập
@@ -49,17 +50,17 @@ export default function Header() {
               <Link
                 key={item.name}
                 href={item.href}
-                className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors"
+                className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors underline"
               >
                 {item.name}
               </Link>
             ))}
         </div>
-        <div className="flex flex-1 justify-end items-center gap-4">
+        <div className="flex flex-1 justify-end items-center gap-3">
           {user ? (
             <>
               <Link
-                href="/profile"
+                href="/account"
                 className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors flex items-center gap-1"
               >
                 <UserIcon className="h-4 w-4" />
@@ -70,7 +71,6 @@ export default function Header() {
                 className="text-sm font-semibold leading-6 text-foreground hover:text-primary transition-colors flex items-center gap-1"
               >
                 <LogOutIcon className="h-4 w-4" />
-                <span>Đăng xuất</span>
               </Link>
             </>
           ) : (
